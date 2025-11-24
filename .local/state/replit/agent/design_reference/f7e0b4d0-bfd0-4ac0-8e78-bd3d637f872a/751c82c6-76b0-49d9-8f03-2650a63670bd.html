@@ -1,0 +1,1093 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Textbelt - Professional SMS Messaging</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+    tailwind.config = {
+        theme: {
+            extend: {
+                borderRadius: {
+                    lg: "var(--radius)",
+                    md: "calc(var(--radius) - 2px)",
+                    sm: "calc(var(--radius) - 4px)",
+                },
+                colors: {
+                    background: "var(--background)",
+                    foreground: "var(--foreground)",
+                    card: {
+                        DEFAULT: "var(--card)",
+                        foreground: "var(--card-foreground)",
+                    },
+                    popover: {
+                        DEFAULT: "var(--popover)",
+                        foreground: "var(--popover-foreground)",
+                    },
+                    primary: {
+                        DEFAULT: "var(--primary)",
+                        foreground: "var(--primary-foreground)",
+                    },
+                    secondary: {
+                        DEFAULT: "var(--secondary)",
+                        foreground: "var(--secondary-foreground)",
+                    },
+                    muted: {
+                        DEFAULT: "var(--muted)",
+                        foreground: "var(--muted-foreground)",
+                    },
+                    accent: {
+                        DEFAULT: "var(--accent)",
+                        foreground: "var(--accent-foreground)",
+                    },
+                    destructive: {
+                        DEFAULT: "var(--destructive)",
+                        foreground: "var(--destructive-foreground)",
+                    },
+                    border: "var(--border)",
+                    input: "var(--input)",
+                    ring: "var(--ring)",
+                    success: "var(--success)",
+                    warning: "var(--warning)",
+                }
+            }
+        }
+    };
+    </script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --background: hsl(210 40% 98%);
+            --foreground: hsl(220 13% 13%);
+            --card: hsl(0 0% 100%);
+            --card-foreground: hsl(220 13% 13%);
+            --popover: hsl(0 0% 100%);
+            --popover-foreground: hsl(220 13% 13%);
+            --primary: hsl(217 91% 60%);
+            --primary-foreground: hsl(0 0% 98%);
+            --secondary: hsl(214 32% 91%);
+            --secondary-foreground: hsl(220 13% 13%);
+            --muted: hsl(214 32% 91%);
+            --muted-foreground: hsl(220 13% 46%);
+            --accent: hsl(214 32% 91%);
+            --accent-foreground: hsl(220 13% 13%);
+            --destructive: hsl(0 84% 60%);
+            --destructive-foreground: hsl(0 0% 98%);
+            --border: hsl(214 32% 91%);
+            --input: hsl(214 32% 91%);
+            --ring: hsl(217 91% 60%);
+            --success: hsl(142 76% 36%);
+            --warning: hsl(32 95% 44%);
+            --radius: 0.5rem;
+        }
+        
+        .dark {
+            --background: hsl(222 16% 9%);
+            --foreground: hsl(213 31% 91%);
+            --card: hsl(222 13% 11%);
+            --card-foreground: hsl(213 31% 91%);
+            --popover: hsl(222 13% 11%);
+            --popover-foreground: hsl(213 31% 91%);
+            --primary: hsl(217 78% 51%);
+            --primary-foreground: hsl(0 0% 98%);
+            --secondary: hsl(222 13% 11%);
+            --secondary-foreground: hsl(213 31% 91%);
+            --muted: hsl(223 47% 11%);
+            --muted-foreground: hsl(215 20% 65%);
+            --accent: hsl(223 47% 11%);
+            --accent-foreground: hsl(213 31% 91%);
+            --destructive: hsl(0 63% 31%);
+            --destructive-foreground: hsl(0 0% 98%);
+            --border: hsl(223 47% 11%);
+            --input: hsl(223 47% 11%);
+            --ring: hsl(217 78% 51%);
+            --success: hsl(142 69% 58%);
+            --warning: hsl(32 81% 29%);
+        }
+        
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+        
+        @media (max-width: 768px) {
+            .sidebar-hidden {
+                transform: translateX(-100%);
+            }
+        }
+    </style>
+</head>
+<body class="bg-background text-foreground min-h-screen">
+    <!-- @COMPONENT: Layout Container -->
+    <div class="flex h-screen overflow-hidden">
+        <!-- @COMPONENT: Sidebar Navigation -->
+        <aside id="sidebar" class="sidebar-transition w-64 bg-card border-r border-border flex-shrink-0 md:translate-x-0 sidebar-hidden md:sidebar-visible">
+            <div class="flex flex-col h-full">
+                <!-- Logo and Brand -->
+                <div class="p-6 border-b border-border">
+                    <div class="flex items-center space-x-2">
+                        <div class="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
+                            <i class="fas fa-sms text-primary-foreground text-sm"></i>
+                        </div>
+                        <span class="text-xl font-semibold text-foreground">Textbelt</span>
+                    </div>
+                </div>
+                
+                <!-- Navigation Menu -->
+                <nav class="flex-1 p-4">
+                    <ul class="space-y-2">
+                        <li>
+                            <a href="#" class="nav-item active flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium bg-primary text-primary-foreground" data-tab="compose">
+                                <i class="fas fa-edit w-4"></i>
+                                <span>Compose</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent" data-tab="history">
+                                <i class="fas fa-history w-4"></i>
+                                <span>Message History</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent" data-tab="contacts">
+                                <i class="fas fa-address-book w-4"></i>
+                                <span>Contacts</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="nav-item flex items-center space-x-3 px-3 py-2 rounded-md text-sm font-medium text-muted-foreground hover:text-foreground hover:bg-accent" data-tab="settings">
+                                <i class="fas fa-cog w-4"></i>
+                                <span>Settings</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+                
+                <!-- Account Info -->
+                <div class="p-4 border-t border-border">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-8 h-8 bg-secondary rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-secondary-foreground text-sm"></i>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-foreground truncate" data-mock="true">John Smith</p>
+                            <p class="text-xs text-muted-foreground truncate" data-mock="true">john@company.com</p>
+                        </div>
+                    </div>
+                    <!-- @STATE: Balance display from API -->
+                    <div class="mt-3 p-2 bg-muted rounded-md">
+                        <p class="text-xs text-muted-foreground">Account Balance</p>
+                        <p class="text-sm font-medium text-foreground" data-bind="account.balance" data-mock="true">$15.67</p>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        <!-- @END_COMPONENT: Sidebar Navigation -->
+
+        <!-- @COMPONENT: Main Content Area -->
+        <main class="flex-1 flex flex-col overflow-hidden">
+            <!-- Header -->
+            <header class="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center space-x-4">
+                    <button id="mobile-menu-btn" class="md:hidden p-2 text-muted-foreground hover:text-foreground" data-event="click:toggleSidebar">
+                        <i class="fas fa-bars text-lg"></i>
+                    </button>
+                    <h1 id="page-title" class="text-2xl font-semibold text-foreground">Compose Message</h1>
+                </div>
+                <div class="flex items-center space-x-3">
+                    <!-- Theme Toggle -->
+                    <button class="p-2 text-muted-foreground hover:text-foreground rounded-md" data-event="click:toggleTheme">
+                        <i class="fas fa-moon text-sm"></i>
+                    </button>
+                    <!-- Notifications -->
+                    <button class="p-2 text-muted-foreground hover:text-foreground rounded-md relative">
+                        <i class="fas fa-bell text-sm"></i>
+                        <span class="absolute -top-1 -right-1 w-3 h-3 bg-destructive rounded-full text-xs"></span>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <div class="flex-1 overflow-auto p-6">
+                <!-- @COMPONENT: Compose Tab -->
+                <div id="compose-tab" class="tab-content">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                            <!-- Message Compose Form -->
+                            <div class="lg:col-span-2">
+                                <div class="bg-card rounded-lg border border-border p-6">
+                                    <h2 class="text-lg font-semibold text-foreground mb-4">Send New Message</h2>
+                                    
+                                    <form id="message-form" class="space-y-4">
+                                        <!-- Phone Number Input -->
+                                        <div>
+                                            <label for="phone" class="block text-sm font-medium text-foreground mb-2">
+                                                Phone Number
+                                            </label>
+                                            <div class="relative">
+                                                <input 
+                                                    type="tel" 
+                                                    id="phone" 
+                                                    class="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                                                    placeholder="+1 (555) 123-4567"
+                                                    data-mock="true"
+                                                    data-implementation="Implement phone number validation and formatting"
+                                                />
+                                                <button type="button" class="absolute right-2 top-2 text-muted-foreground hover:text-foreground" data-event="click:selectFromContacts">
+                                                    <i class="fas fa-address-book text-sm"></i>
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-muted-foreground mt-1">Enter phone number with country code</p>
+                                        </div>
+
+                                        <!-- Message Content -->
+                                        <div>
+                                            <label for="message" class="block text-sm font-medium text-foreground mb-2">
+                                                Message
+                                            </label>
+                                            <textarea 
+                                                id="message" 
+                                                rows="4" 
+                                                class="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring resize-none"
+                                                placeholder="Type your message here..."
+                                                data-mock="true"
+                                                data-implementation="Implement character counting and auto-resize"
+                                            ></textarea>
+                                            <div class="flex justify-between items-center mt-2">
+                                                <span class="text-xs text-muted-foreground" id="char-count" data-bind="message.length">0/160 characters</span>
+                                                <span class="text-xs text-muted-foreground" id="cost-estimate" data-bind="message.estimatedCost" data-mock="true">Est. cost: $0.04</span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Quick Actions -->
+                                        <div class="flex flex-wrap gap-2">
+                                            <button type="button" class="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80" data-event="click:insertTemplate">
+                                                <i class="fas fa-clock mr-1"></i>Template
+                                            </button>
+                                            <button type="button" class="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80" data-event="click:scheduleMessage">
+                                                <i class="fas fa-calendar mr-1"></i>Schedule
+                                            </button>
+                                            <button type="button" class="px-3 py-1 text-xs bg-secondary text-secondary-foreground rounded-md hover:bg-secondary/80" data-event="click:addAttachment">
+                                                <i class="fas fa-paperclip mr-1"></i>Attach
+                                            </button>
+                                        </div>
+
+                                        <!-- Send Button -->
+                                        <div class="flex space-x-3 pt-4">
+                                            <button type="submit" class="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md font-medium hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50" data-event="click:sendMessage">
+                                                <i class="fas fa-paper-plane mr-2"></i>
+                                                Send Message
+                                            </button>
+                                            <button type="button" class="px-4 py-2 border border-border rounded-md text-muted-foreground hover:text-foreground hover:bg-accent" data-event="click:saveDraft">
+                                                <i class="fas fa-save"></i>
+                                            </button>
+                                        </div>
+                                    </form>
+
+                                    <!-- Success/Error Messages -->
+                                    <div id="message-feedback" class="mt-4 hidden">
+                                        <!-- Success State -->
+                                        <div class="success-message hidden p-4 bg-green-50 border border-green-200 rounded-md">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-check-circle text-green-600 mr-2"></i>
+                                                <span class="text-green-800 font-medium">Message sent successfully!</span>
+                                            </div>
+                                            <p class="text-green-700 text-sm mt-1" data-mock="true">Delivered to +1 (555) 123-4567 at 2:34 PM</p>
+                                        </div>
+                                        
+                                        <!-- Error State -->
+                                        <div class="error-message hidden p-4 bg-red-50 border border-red-200 rounded-md">
+                                            <div class="flex items-center">
+                                                <i class="fas fa-exclamation-circle text-red-600 mr-2"></i>
+                                                <span class="text-red-800 font-medium">Failed to send message</span>
+                                            </div>
+                                            <p class="text-red-700 text-sm mt-1" data-mock="true">Invalid phone number format. Please check and try again.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Quick Contacts Sidebar -->
+                            <div class="lg:col-span-1">
+                                <div class="bg-card rounded-lg border border-border p-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-lg font-semibold text-foreground">Quick Contacts</h3>
+                                        <button class="text-primary hover:text-primary/80 text-sm" data-event="click:addContact">
+                                            <i class="fas fa-plus mr-1"></i>Add
+                                        </button>
+                                    </div>
+                                    
+                                    <!-- @MAP: contacts.filter(c => c.isFavorite).map(contact => ( -->
+                                    <div class="space-y-3">
+                                        <div class="contact-item p-3 border border-border rounded-md hover:bg-accent cursor-pointer" data-event="click:selectContact" data-mock="true">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="font-medium text-foreground text-sm" data-bind="contact.name">Sarah Johnson</p>
+                                                    <p class="text-xs text-muted-foreground" data-bind="contact.phone">+1 (555) 987-6543</p>
+                                                </div>
+                                                <div class="flex items-center space-x-1">
+                                                    <span class="text-xs text-muted-foreground" data-bind="contact.lastMessageTime" data-mock="true">2d ago</span>
+                                                    <i class="fas fa-star text-warning text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item p-3 border border-border rounded-md hover:bg-accent cursor-pointer" data-event="click:selectContact" data-mock="true">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="font-medium text-foreground text-sm" data-bind="contact.name">Mike Chen</p>
+                                                    <p class="text-xs text-muted-foreground" data-bind="contact.phone">+1 (555) 456-7890</p>
+                                                </div>
+                                                <div class="flex items-center space-x-1">
+                                                    <span class="text-xs text-muted-foreground" data-bind="contact.lastMessageTime" data-mock="true">1w ago</span>
+                                                    <i class="fas fa-star text-warning text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="contact-item p-3 border border-border rounded-md hover:bg-accent cursor-pointer" data-event="click:selectContact" data-mock="true">
+                                            <div class="flex items-center justify-between">
+                                                <div>
+                                                    <p class="font-medium text-foreground text-sm" data-bind="contact.name">Emma Davis</p>
+                                                    <p class="text-xs text-muted-foreground" data-bind="contact.phone">+1 (555) 234-5678</p>
+                                                </div>
+                                                <div class="flex items-center space-x-1">
+                                                    <span class="text-xs text-muted-foreground" data-bind="contact.lastMessageTime" data-mock="true">3w ago</span>
+                                                    <i class="fas fa-star text-warning text-xs"></i>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+
+                                    <button class="w-full mt-4 text-primary hover:text-primary/80 text-sm border border-border rounded-md py-2" data-event="click:viewAllContacts">
+                                        View All Contacts
+                                    </button>
+                                </div>
+
+                                <!-- Message Templates -->
+                                <div class="bg-card rounded-lg border border-border p-6 mt-4">
+                                    <h3 class="text-lg font-semibold text-foreground mb-4">Quick Templates</h3>
+                                    <div class="space-y-2">
+                                        <button class="w-full text-left p-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md" data-event="click:useTemplate" data-mock="true">
+                                            "Thanks for your business!"
+                                        </button>
+                                        <button class="w-full text-left p-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md" data-event="click:useTemplate" data-mock="true">
+                                            "Your order is ready for pickup"
+                                        </button>
+                                        <button class="w-full text-left p-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md" data-event="click:useTemplate" data-mock="true">
+                                            "Reminder: Appointment tomorrow"
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Compose Tab -->
+
+                <!-- @COMPONENT: Message History Tab -->
+                <div id="history-tab" class="tab-content hidden">
+                    <div class="max-w-6xl mx-auto">
+                        <div class="bg-card rounded-lg border border-border">
+                            <!-- Filter and Search Header -->
+                            <div class="p-6 border-b border-border">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                                    <h2 class="text-lg font-semibold text-foreground">Message History</h2>
+                                    <div class="flex items-center space-x-3">
+                                        <div class="relative">
+                                            <input 
+                                                type="text" 
+                                                placeholder="Search messages..." 
+                                                class="pl-8 pr-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring w-full sm:w-64"
+                                                data-implementation="Implement search functionality"
+                                            />
+                                            <i class="fas fa-search absolute left-2.5 top-2.5 text-muted-foreground text-sm"></i>
+                                        </div>
+                                        <select class="px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring">
+                                            <option>All Status</option>
+                                            <option>Delivered</option>
+                                            <option>Failed</option>
+                                            <option>Pending</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Message History Table -->
+                            <div class="overflow-x-auto">
+                                <table class="w-full">
+                                    <thead class="bg-muted">
+                                        <tr>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Recipient</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Message</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Status</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Sent</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Cost</th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-border">
+                                        <!-- @MAP: messageHistory.map(message => ( -->
+                                        <tr class="hover:bg-accent" data-mock="true">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div>
+                                                    <p class="text-sm font-medium text-foreground" data-bind="message.recipientName">Sarah Johnson</p>
+                                                    <p class="text-xs text-muted-foreground" data-bind="message.recipientPhone">+1 (555) 987-6543</p>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <p class="text-sm text-foreground truncate max-w-xs" data-bind="message.content">Thanks for your business! Your order will arrive tomorrow between 2-4 PM.</p>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800" data-bind="message.status">
+                                                    <i class="fas fa-check-circle mr-1"></i>Delivered
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" data-bind="message.sentAt" data-mock="true">
+                                                2 hours ago
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" data-bind="message.cost" data-mock="true">
+                                                $0.04
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                <div class="flex items-center space-x-2">
+                                                    <button class="text-primary hover:text-primary/80" data-event="click:resendMessage">
+                                                        <i class="fas fa-redo text-xs"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-foreground" data-event="click:viewDetails">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        
+                                        <tr class="hover:bg-accent" data-mock="true">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div>
+                                                    <p class="text-sm font-medium text-foreground" data-bind="message.recipientName">Mike Chen</p>
+                                                    <p class="text-xs text-muted-foreground" data-bind="message.recipientPhone">+1 (555) 456-7890</p>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <p class="text-sm text-foreground truncate max-w-xs" data-bind="message.content">Your appointment is confirmed for tomorrow at 3 PM.</p>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" data-bind="message.status">
+                                                    <i class="fas fa-times-circle mr-1"></i>Failed
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" data-bind="message.sentAt" data-mock="true">
+                                                5 hours ago
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" data-bind="message.cost" data-mock="true">
+                                                $0.00
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                <div class="flex items-center space-x-2">
+                                                    <button class="text-primary hover:text-primary/80" data-event="click:resendMessage">
+                                                        <i class="fas fa-redo text-xs"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-foreground" data-event="click:viewDetails">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="hover:bg-accent" data-mock="true">
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div>
+                                                    <p class="text-sm font-medium text-foreground" data-bind="message.recipientName">Emma Davis</p>
+                                                    <p class="text-xs text-muted-foreground" data-bind="message.recipientPhone">+1 (555) 234-5678</p>
+                                                </div>
+                                            </td>
+                                            <td class="px-6 py-4">
+                                                <p class="text-sm text-foreground truncate max-w-xs" data-bind="message.content">Hi Emma, just following up on our meeting yesterday. Let me know if you have any questions!</p>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800" data-bind="message.status">
+                                                    <i class="fas fa-clock mr-1"></i>Pending
+                                                </span>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" data-bind="message.sentAt" data-mock="true">
+                                                1 day ago
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground" data-bind="message.cost" data-mock="true">
+                                                $0.04
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                                <div class="flex items-center space-x-2">
+                                                    <button class="text-primary hover:text-primary/80" data-event="click:resendMessage">
+                                                        <i class="fas fa-redo text-xs"></i>
+                                                    </button>
+                                                    <button class="text-muted-foreground hover:text-foreground" data-event="click:viewDetails">
+                                                        <i class="fas fa-eye text-xs"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <!-- @END_MAP )) -->
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- Pagination -->
+                            <div class="px-6 py-4 border-t border-border">
+                                <div class="flex items-center justify-between">
+                                    <p class="text-sm text-muted-foreground" data-mock="true">
+                                        Showing 1 to 10 of 157 messages
+                                    </p>
+                                    <div class="flex items-center space-x-2">
+                                        <button class="px-3 py-1 border border-border rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent disabled:opacity-50" disabled>
+                                            Previous
+                                        </button>
+                                        <button class="px-3 py-1 border border-border rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent">
+                                            Next
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Message History Tab -->
+
+                <!-- @COMPONENT: Contacts Tab -->
+                <div id="contacts-tab" class="tab-content hidden">
+                    <div class="max-w-4xl mx-auto">
+                        <div class="bg-card rounded-lg border border-border">
+                            <!-- Contacts Header -->
+                            <div class="p-6 border-b border-border">
+                                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between space-y-4 sm:space-y-0">
+                                    <h2 class="text-lg font-semibold text-foreground">Contact Management</h2>
+                                    <div class="flex items-center space-x-3">
+                                        <button class="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90" data-event="click:addNewContact">
+                                            <i class="fas fa-plus mr-2"></i>Add Contact
+                                        </button>
+                                        <button class="border border-border px-4 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent" data-event="click:importContacts">
+                                            <i class="fas fa-upload mr-2"></i>Import
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Contact Grid -->
+                            <div class="p-6">
+                                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                    <!-- @MAP: contacts.map(contact => ( -->
+                                    <div class="contact-card p-4 border border-border rounded-lg hover:shadow-md transition-shadow" data-mock="true">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
+                                                    <span class="text-primary-foreground font-medium text-sm" data-bind="contact.initials">SJ</span>
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-medium text-foreground" data-bind="contact.name">Sarah Johnson</h3>
+                                                    <p class="text-sm text-muted-foreground" data-bind="contact.phone">+1 (555) 987-6543</p>
+                                                </div>
+                                            </div>
+                                            <button class="text-muted-foreground hover:text-warning" data-event="click:toggleFavorite">
+                                                <i class="fas fa-star text-warning"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-3 pt-3 border-t border-border">
+                                            <div class="flex items-center justify-between text-xs text-muted-foreground">
+                                                <span data-bind="contact.messageCount" data-mock="true">12 messages</span>
+                                                <span data-bind="contact.lastContact" data-mock="true">2 days ago</span>
+                                            </div>
+                                            <div class="flex items-center space-x-2 mt-2">
+                                                <button class="flex-1 bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-medium hover:bg-primary/90" data-event="click:sendMessage">
+                                                    <i class="fas fa-sms mr-1"></i>Message
+                                                </button>
+                                                <button class="px-3 py-1 border border-border rounded text-xs text-muted-foreground hover:text-foreground hover:bg-accent" data-event="click:editContact">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="px-3 py-1 border border-border rounded text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground" data-event="click:deleteContact">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="contact-card p-4 border border-border rounded-lg hover:shadow-md transition-shadow" data-mock="true">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-10 h-10 bg-secondary rounded-full flex items-center justify-center">
+                                                    <span class="text-secondary-foreground font-medium text-sm" data-bind="contact.initials">MC</span>
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-medium text-foreground" data-bind="contact.name">Mike Chen</h3>
+                                                    <p class="text-sm text-muted-foreground" data-bind="contact.phone">+1 (555) 456-7890</p>
+                                                </div>
+                                            </div>
+                                            <button class="text-muted-foreground hover:text-warning" data-event="click:toggleFavorite">
+                                                <i class="fas fa-star text-warning"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-3 pt-3 border-t border-border">
+                                            <div class="flex items-center justify-between text-xs text-muted-foreground">
+                                                <span data-bind="contact.messageCount" data-mock="true">8 messages</span>
+                                                <span data-bind="contact.lastContact" data-mock="true">1 week ago</span>
+                                            </div>
+                                            <div class="flex items-center space-x-2 mt-2">
+                                                <button class="flex-1 bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-medium hover:bg-primary/90" data-event="click:sendMessage">
+                                                    <i class="fas fa-sms mr-1"></i>Message
+                                                </button>
+                                                <button class="px-3 py-1 border border-border rounded text-xs text-muted-foreground hover:text-foreground hover:bg-accent" data-event="click:editContact">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="px-3 py-1 border border-border rounded text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground" data-event="click:deleteContact">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="contact-card p-4 border border-border rounded-lg hover:shadow-md transition-shadow" data-mock="true">
+                                        <div class="flex items-start justify-between">
+                                            <div class="flex items-center space-x-3">
+                                                <div class="w-10 h-10 bg-accent rounded-full flex items-center justify-center">
+                                                    <span class="text-accent-foreground font-medium text-sm" data-bind="contact.initials">ED</span>
+                                                </div>
+                                                <div>
+                                                    <h3 class="font-medium text-foreground" data-bind="contact.name">Emma Davis</h3>
+                                                    <p class="text-sm text-muted-foreground" data-bind="contact.phone">+1 (555) 234-5678</p>
+                                                </div>
+                                            </div>
+                                            <button class="text-muted-foreground hover:text-warning" data-event="click:toggleFavorite">
+                                                <i class="far fa-star"></i>
+                                            </button>
+                                        </div>
+                                        
+                                        <div class="mt-3 pt-3 border-t border-border">
+                                            <div class="flex items-center justify-between text-xs text-muted-foreground">
+                                                <span data-bind="contact.messageCount" data-mock="true">5 messages</span>
+                                                <span data-bind="contact.lastContact" data-mock="true">3 weeks ago</span>
+                                            </div>
+                                            <div class="flex items-center space-x-2 mt-2">
+                                                <button class="flex-1 bg-primary text-primary-foreground px-3 py-1 rounded text-xs font-medium hover:bg-primary/90" data-event="click:sendMessage">
+                                                    <i class="fas fa-sms mr-1"></i>Message
+                                                </button>
+                                                <button class="px-3 py-1 border border-border rounded text-xs text-muted-foreground hover:text-foreground hover:bg-accent" data-event="click:editContact">
+                                                    <i class="fas fa-edit"></i>
+                                                </button>
+                                                <button class="px-3 py-1 border border-border rounded text-xs text-destructive hover:bg-destructive hover:text-destructive-foreground" data-event="click:deleteContact">
+                                                    <i class="fas fa-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <!-- @END_MAP )) -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Contacts Tab -->
+
+                <!-- @COMPONENT: Settings Tab -->
+                <div id="settings-tab" class="tab-content hidden">
+                    <div class="max-w-2xl mx-auto space-y-6">
+                        <!-- API Configuration -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h2 class="text-lg font-semibold text-foreground mb-4">API Configuration</h2>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="api-key" class="block text-sm font-medium text-foreground mb-2">
+                                        Textbelt API Key
+                                    </label>
+                                    <div class="relative">
+                                        <input 
+                                            type="password" 
+                                            id="api-key" 
+                                            class="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring pr-10"
+                                            placeholder="Enter your API key"
+                                            data-implementation="Secure storage of API key"
+                                        />
+                                        <button type="button" class="absolute right-2 top-2 text-muted-foreground hover:text-foreground" data-event="click:toggleApiKeyVisibility">
+                                            <i class="fas fa-eye text-sm"></i>
+                                        </button>
+                                    </div>
+                                    <p class="text-xs text-muted-foreground mt-1">
+                                        Get your API key from <a href="#" class="text-primary hover:underline">textbelt.com</a>
+                                    </p>
+                                </div>
+
+                                <div>
+                                    <label for="api-endpoint" class="block text-sm font-medium text-foreground mb-2">
+                                        API Endpoint
+                                    </label>
+                                    <input 
+                                        type="url" 
+                                        id="api-endpoint" 
+                                        value="https://textbelt.com/text"
+                                        class="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                                        data-implementation="Configurable API endpoint"
+                                    />
+                                </div>
+
+                                <div class="flex items-center space-x-2">
+                                    <button class="bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90" data-event="click:testConnection">
+                                        <i class="fas fa-plug mr-2"></i>Test Connection
+                                    </button>
+                                    <button class="border border-border px-4 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent" data-event="click:saveSettings">
+                                        <i class="fas fa-save mr-2"></i>Save Settings
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message Preferences -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h2 class="text-lg font-semibold text-foreground mb-4">Message Preferences</h2>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label for="default-country" class="block text-sm font-medium text-foreground mb-2">
+                                        Default Country Code
+                                    </label>
+                                    <select id="default-country" class="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring">
+                                        <option value="+1">United States (+1)</option>
+                                        <option value="+44">United Kingdom (+44)</option>
+                                        <option value="+49">Germany (+49)</option>
+                                        <option value="+33">France (+33)</option>
+                                    </select>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-foreground">Auto-save drafts</label>
+                                        <p class="text-xs text-muted-foreground">Automatically save message drafts while typing</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" checked data-implementation="Toggle switch component">
+                                        <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <label class="text-sm font-medium text-foreground">Message confirmations</label>
+                                        <p class="text-xs text-muted-foreground">Show confirmation dialog before sending</p>
+                                    </div>
+                                    <label class="relative inline-flex items-center cursor-pointer">
+                                        <input type="checkbox" class="sr-only peer" data-implementation="Toggle switch component">
+                                        <div class="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-ring/20 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Account Usage -->
+                        <div class="bg-card rounded-lg border border-border p-6">
+                            <h2 class="text-lg font-semibold text-foreground mb-4">Account Usage</h2>
+                            
+                            <div class="space-y-4">
+                                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                    <div class="bg-muted rounded-lg p-4 text-center">
+                                        <p class="text-2xl font-bold text-foreground" data-bind="usage.messagesSent" data-mock="true">1,247</p>
+                                        <p class="text-sm text-muted-foreground">Messages Sent</p>
+                                    </div>
+                                    <div class="bg-muted rounded-lg p-4 text-center">
+                                        <p class="text-2xl font-bold text-foreground" data-bind="usage.totalSpent" data-mock="true">$49.88</p>
+                                        <p class="text-sm text-muted-foreground">Total Spent</p>
+                                    </div>
+                                    <div class="bg-muted rounded-lg p-4 text-center">
+                                        <p class="text-2xl font-bold text-foreground" data-bind="usage.successRate" data-mock="true">98.2%</p>
+                                        <p class="text-sm text-muted-foreground">Success Rate</p>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="flex justify-between items-center mb-2">
+                                        <span class="text-sm font-medium text-foreground">Monthly Usage</span>
+                                        <span class="text-sm text-muted-foreground" data-mock="true">157 / 500 messages</span>
+                                    </div>
+                                    <div class="w-full bg-muted rounded-full h-2">
+                                        <div class="bg-primary h-2 rounded-full" style="width: 31.4%" data-bind="usage.progressPercentage"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Settings Tab -->
+            </div>
+        </main>
+        <!-- @END_COMPONENT: Main Content Area -->
+    </div>
+
+    <!-- @COMPONENT: Mobile Bottom Navigation -->
+    <nav class="md:hidden fixed bottom-0 left-0 right-0 bg-card border-t border-border">
+        <div class="flex items-center justify-around py-2">
+            <button class="mobile-nav-item flex flex-col items-center p-2 text-primary" data-tab="compose">
+                <i class="fas fa-edit text-lg"></i>
+                <span class="text-xs mt-1">Compose</span>
+            </button>
+            <button class="mobile-nav-item flex flex-col items-center p-2 text-muted-foreground" data-tab="history">
+                <i class="fas fa-history text-lg"></i>
+                <span class="text-xs mt-1">History</span>
+            </button>
+            <button class="mobile-nav-item flex flex-col items-center p-2 text-muted-foreground" data-tab="contacts">
+                <i class="fas fa-address-book text-lg"></i>
+                <span class="text-xs mt-1">Contacts</span>
+            </button>
+            <button class="mobile-nav-item flex flex-col items-center p-2 text-muted-foreground" data-tab="settings">
+                <i class="fas fa-cog text-lg"></i>
+                <span class="text-xs mt-1">Settings</span>
+            </button>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Mobile Bottom Navigation -->
+
+    <!-- @COMPONENT: Modal Overlay for Add Contact -->
+    <div id="contact-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+        <div class="bg-card rounded-lg border border-border w-full max-w-md">
+            <div class="p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-semibold text-foreground">Add New Contact</h3>
+                    <button class="text-muted-foreground hover:text-foreground" data-event="click:closeModal">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                
+                <form class="space-y-4">
+                    <div>
+                        <label for="contact-name" class="block text-sm font-medium text-foreground mb-2">Name</label>
+                        <input 
+                            type="text" 
+                            id="contact-name" 
+                            class="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                            placeholder="Enter contact name"
+                        />
+                    </div>
+                    
+                    <div>
+                        <label for="contact-phone" class="block text-sm font-medium text-foreground mb-2">Phone Number</label>
+                        <input 
+                            type="tel" 
+                            id="contact-phone" 
+                            class="w-full px-3 py-2 border border-input rounded-md bg-background text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:border-ring"
+                            placeholder="+1 (555) 123-4567"
+                        />
+                    </div>
+                    
+                    <div class="flex items-center space-x-2">
+                        <input type="checkbox" id="contact-favorite" class="w-4 h-4 text-primary focus:ring-ring border-border rounded">
+                        <label for="contact-favorite" class="text-sm text-foreground">Add to favorites</label>
+                    </div>
+                    
+                    <div class="flex space-x-3 pt-4">
+                        <button type="button" class="flex-1 border border-border px-4 py-2 rounded-md text-sm text-muted-foreground hover:text-foreground hover:bg-accent" data-event="click:closeModal">
+                            Cancel
+                        </button>
+                        <button type="submit" class="flex-1 bg-primary text-primary-foreground px-4 py-2 rounded-md text-sm font-medium hover:bg-primary/90" data-event="click:saveContact">
+                            Save Contact
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Modal Overlay for Add Contact -->
+
+    <!-- @COMPONENT: Toast Notifications -->
+    <div id="toast-container" class="fixed top-4 right-4 z-50 space-y-2">
+        <!-- Success Toast -->
+        <div class="toast hidden bg-card border border-border rounded-lg shadow-lg p-4 max-w-sm">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-green-600"></i>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-foreground">Success!</p>
+                    <p class="text-xs text-muted-foreground mt-1">Message sent successfully</p>
+                </div>
+                <button class="ml-auto text-muted-foreground hover:text-foreground" data-event="click:dismissToast">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Toast Notifications -->
+
+    <script>
+        // TODO: Implement React state management and API integration
+        (function() {
+            // Tab switching functionality
+            const navItems = document.querySelectorAll('.nav-item');
+            const mobileNavItems = document.querySelectorAll('.mobile-nav-item');
+            const tabContents = document.querySelectorAll('.tab-content');
+            const pageTitle = document.getElementById('page-title');
+            
+            function switchTab(tabName) {
+                // Update nav items
+                navItems.forEach(item => {
+                    item.classList.remove('active', 'bg-primary', 'text-primary-foreground');
+                    item.classList.add('text-muted-foreground', 'hover:text-foreground', 'hover:bg-accent');
+                });
+                
+                mobileNavItems.forEach(item => {
+                    item.classList.remove('text-primary');
+                    item.classList.add('text-muted-foreground');
+                });
+                
+                // Activate current tab
+                const activeNavItem = document.querySelector(`[data-tab="${tabName}"]`);
+                if (activeNavItem) {
+                    if (activeNavItem.classList.contains('nav-item')) {
+                        activeNavItem.classList.add('active', 'bg-primary', 'text-primary-foreground');
+                        activeNavItem.classList.remove('text-muted-foreground', 'hover:text-foreground', 'hover:bg-accent');
+                    } else {
+                        activeNavItem.classList.add('text-primary');
+                        activeNavItem.classList.remove('text-muted-foreground');
+                    }
+                }
+                
+                // Show/hide tab content
+                tabContents.forEach(content => content.classList.add('hidden'));
+                const activeTab = document.getElementById(`${tabName}-tab`);
+                if (activeTab) {
+                    activeTab.classList.remove('hidden');
+                }
+                
+                // Update page title
+                const titles = {
+                    'compose': 'Compose Message',
+                    'history': 'Message History',
+                    'contacts': 'Contact Management',
+                    'settings': 'Settings'
+                };
+                pageTitle.textContent = titles[tabName] || 'Textbelt';
+            }
+            
+            // Add event listeners
+            [...navItems, ...mobileNavItems].forEach(item => {
+                item.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const tabName = item.getAttribute('data-tab');
+                    if (tabName) {
+                        switchTab(tabName);
+                    }
+                });
+            });
+            
+            // Mobile sidebar toggle
+            const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            const sidebar = document.getElementById('sidebar');
+            
+            mobileMenuBtn.addEventListener('click', () => {
+                sidebar.classList.toggle('sidebar-hidden');
+            });
+            
+            // Close sidebar when clicking outside on mobile
+            document.addEventListener('click', (e) => {
+                if (window.innerWidth < 768 && 
+                    !sidebar.contains(e.target) && 
+                    !mobileMenuBtn.contains(e.target) &&
+                    !sidebar.classList.contains('sidebar-hidden')) {
+                    sidebar.classList.add('sidebar-hidden');
+                }
+            });
+            
+            // Character counting
+            const messageTextarea = document.getElementById('message');
+            const charCount = document.getElementById('char-count');
+            const costEstimate = document.getElementById('cost-estimate');
+            
+            if (messageTextarea) {
+                messageTextarea.addEventListener('input', function() {
+                    const length = this.value.length;
+                    const smsCount = Math.ceil(length / 160) || 1;
+                    const cost = (smsCount * 0.04).toFixed(2);
+                    
+                    charCount.textContent = `${length}/160 characters`;
+                    costEstimate.textContent = `Est. cost: $${cost}`;
+                    
+                    // Update color based on length
+                    if (length > 160) {
+                        charCount.classList.add('text-warning');
+                    } else {
+                        charCount.classList.remove('text-warning');
+                    }
+                });
+            }
+            
+            // Contact selection
+            document.querySelectorAll('.contact-item').forEach(item => {
+                item.addEventListener('click', function() {
+                    const phone = this.querySelector('[data-bind="contact.phone"]').textContent;
+                    if (messageTextarea) {
+                        document.getElementById('phone').value = phone;
+                        switchTab('compose');
+                    }
+                });
+            });
+            
+            // Modal functionality
+            const contactModal = document.getElementById('contact-modal');
+            
+            document.querySelectorAll('[data-event*="addContact"], [data-event*="addNewContact"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    contactModal.classList.remove('hidden');
+                });
+            });
+            
+            document.querySelectorAll('[data-event*="closeModal"]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    contactModal.classList.add('hidden');
+                });
+            });
+            
+            // Close modal on backdrop click
+            contactModal.addEventListener('click', (e) => {
+                if (e.target === contactModal) {
+                    contactModal.classList.add('hidden');
+                }
+            });
+            
+            // Form submission simulation
+            const messageForm = document.getElementById('message-form');
+            if (messageForm) {
+                messageForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    // TODO: Implement actual message sending via Textbelt API
+                    console.log('Form submitted - implement API call');
+                    
+                    // Simulate success feedback
+                    const feedback = document.getElementById('message-feedback');
+                    const successMsg = feedback.querySelector('.success-message');
+                    
+                    feedback.classList.remove('hidden');
+                    successMsg.classList.remove('hidden');
+                    
+                    setTimeout(() => {
+                        feedback.classList.add('hidden');
+                        successMsg.classList.add('hidden');
+                    }, 5000);
+                });
+            }
+            
+            // Initialize default character count
+            if (charCount) {
+                charCount.textContent = '0/160 characters';
+            }
+            if (costEstimate) {
+                costEstimate.textContent = 'Est. cost: $0.04';
+            }
+        })();
+    </script>
+</body>
+</html>
