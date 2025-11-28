@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Lock, Send, MessageSquare, Smartphone, Zap, Moon, Sun, User, Eye, EyeOff, ArrowLeft, KeyRound, CheckCircle2, Sparkles, Shield, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 
 type AuthMode = "signin" | "signup" | "forgot" | "reset-sent";
 
@@ -18,9 +19,11 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const { toast} = useToast();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -36,11 +39,35 @@ export default function AuthPage() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast({ title: "Welcome back!", description: "Successfully signed in." });
-      setTimeout(() => setLocation("/"), 500);
+      const response = await fetch('/api/auth/signin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+      
+      const data = await response.json();
+      
+      if (response.ok) {
+        toast({ title: "Welcome back!", description: "Successfully signed in." });
+        // Show loading transition
+        setIsRedirecting(true);
+        // Invalidate auth query to refresh authentication status
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
+        // Smooth transition before redirect
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 800);
+      } else {
+        console.error("Sign in failed:", data);
+        toast({ 
+          title: "Sign in failed", 
+          description: data.message || "Invalid email or password.", 
+          variant: "destructive" 
+        });
+      }
     } catch (error) {
-      toast({ title: "Failed", description: "Check your credentials.", variant: "destructive" });
+      console.error("Sign in error:", error);
+      toast({ title: "Error", description: "Connection failed. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -53,18 +80,50 @@ export default function AuthPage() {
       return;
     }
     if (password.length < 8) {
-      toast({ title: "Password too short", variant: "destructive" });
+      toast({ title: "Password too short", description: "Minimum 8 characters required", variant: "destructive" });
       return;
     }
     setIsLoading(true);
     try {
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      toast({ title: "Account created!" });
-      setMode("signin");
-      setPassword("");
-      setConfirmPassword("");
+      console.log("Attempting signup with:", { email, fullName });
+      
+      const response = await fetch('/api/auth/signup', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          email, 
+          password, 
+          fullName 
+        }),
+      });
+      
+      const data = await response.json();
+      console.log("Signup response:", data);
+      
+      if (response.ok) {
+        toast({ 
+          title: "Account created!", 
+          description: "Welcome! Redirecting to dashboard..." 
+        });
+        // Show loading transition
+        setIsRedirecting(true);
+        // Invalidate auth query to refresh authentication status
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
+        // Smooth transition before redirect
+        setTimeout(() => {
+          window.location.href = "/";
+        }, 800);
+      } else {
+        console.error("Signup failed:", data);
+        toast({ 
+          title: "Sign up failed", 
+          description: data.message || "Please try again.", 
+          variant: "destructive" 
+        });
+      }
     } catch (error) {
-      toast({ title: "Sign up failed", variant: "destructive" });
+      console.error("Signup error:", error);
+      toast({ title: "Error", description: "Connection failed. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -86,8 +145,8 @@ export default function AuthPage() {
   const renderSignIn = () => (
     <form onSubmit={handleSignIn} className="space-y-5">
       <div className="space-y-2">
-        <Label htmlFor="signin-email" className="flex items-center gap-2 text-sm font-medium">
-          <Mail className="w-4 h-4 text-primary" />
+        <Label htmlFor="signin-email" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+          <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           Email Address
         </Label>
         <Input 
@@ -103,14 +162,14 @@ export default function AuthPage() {
       
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="signin-password" className="flex items-center gap-2 text-sm font-medium">
-            <Lock className="w-4 h-4 text-primary" />
+          <Label htmlFor="signin-password" className="flex items-center gap-2 text-sm font-semibold text-foreground">
+            <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
             Password
           </Label>
           <button 
             type="button" 
             onClick={() => setMode("forgot")} 
-            className="text-xs text-primary hover:underline font-medium transition-colors"
+            className="text-xs text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400 hover:underline font-semibold transition-colors"
           >
             Forgot password?
           </button>
@@ -158,7 +217,7 @@ export default function AuthPage() {
           <div className="w-full border-t border-muted-foreground/20" />
         </div>
         <div className="relative flex justify-center text-xs">
-          <span className="bg-white dark:bg-gray-900 px-3 text-muted-foreground uppercase tracking-wider">
+          <span className="bg-white dark:bg-gray-900 px-3 text-gray-600 dark:text-gray-400 uppercase tracking-wider font-medium">
             Or continue with
           </span>
         </div>
@@ -193,11 +252,11 @@ export default function AuthPage() {
       </div>
 
       <div className="text-center text-sm pt-4">
-        <span className="text-muted-foreground">Don't have an account? </span>
+        <span className="text-gray-700 dark:text-gray-300">Don't have an account? </span>
         <button 
           type="button" 
           onClick={() => setMode("signup")} 
-          className="text-primary font-semibold hover:underline transition-colors"
+          className="text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400 font-bold hover:underline transition-colors"
         >
           Sign up for free
         </button>
@@ -208,8 +267,8 @@ export default function AuthPage() {
   const renderSignUp = () => (
     <form onSubmit={handleSignUp} className="space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="signup-name" className="flex items-center gap-2">
-          <User className="w-4 h-4 text-primary" />
+        <Label htmlFor="signup-name" className="flex items-center gap-2 font-semibold text-foreground">
+          <User className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           Full Name
         </Label>
         <Input 
@@ -224,8 +283,8 @@ export default function AuthPage() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="signup-email" className="flex items-center gap-2">
-          <Mail className="w-4 h-4 text-primary" />
+        <Label htmlFor="signup-email" className="flex items-center gap-2 font-semibold text-foreground">
+          <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           Email
         </Label>
         <Input 
@@ -240,8 +299,8 @@ export default function AuthPage() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="signup-password" className="flex items-center gap-2">
-          <Lock className="w-4 h-4 text-primary" />
+        <Label htmlFor="signup-password" className="flex items-center gap-2 font-semibold text-foreground">
+          <Lock className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           Password
         </Label>
         <div className="relative">
@@ -262,8 +321,8 @@ export default function AuthPage() {
       </div>
       
       <div className="space-y-2">
-        <Label htmlFor="signup-confirm" className="flex items-center gap-2">
-          <Shield className="w-4 h-4 text-primary" />
+        <Label htmlFor="signup-confirm" className="flex items-center gap-2 font-semibold text-foreground">
+          <Shield className="w-4 h-4 text-purple-600 dark:text-purple-400" />
           Confirm Password
         </Label>
         <div className="relative">
@@ -302,8 +361,8 @@ export default function AuthPage() {
       </Button>
       
       <div className="text-center text-sm pt-4">
-        <span className="text-muted-foreground">Already have an account? </span>
-        <button type="button" onClick={() => setMode("signin")} className="text-primary font-semibold hover:underline">Sign in</button>
+        <span className="text-gray-700 dark:text-gray-300">Already have an account? </span>
+        <button type="button" onClick={() => setMode("signin")} className="text-blue-600 dark:text-blue-400 hover:text-purple-600 dark:hover:text-purple-400 font-bold hover:underline transition-colors">Sign in</button>
       </div>
     </form>
   );
@@ -312,7 +371,7 @@ export default function AuthPage() {
     <div className="space-y-6">
       <button 
         onClick={() => setMode("signin")} 
-        className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary transition-colors group"
+        className="flex items-center gap-1 text-sm text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors group font-medium"
       >
         <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
         <span>Back to sign in</span>
@@ -322,18 +381,18 @@ export default function AuthPage() {
         <div className="mx-auto w-20 h-20 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-2xl flex items-center justify-center mb-4 animate-pulse">
           <KeyRound className="w-10 h-10 text-primary" />
         </div>
-        <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400 bg-clip-text text-transparent">
+        <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
           Reset Your Password
         </h3>
-        <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+        <p className="text-sm text-gray-700 dark:text-gray-300 max-w-sm mx-auto font-medium">
           Enter your email address and we'll send you a secure link to reset your password
         </p>
       </div>
       
       <form onSubmit={handleForgotPassword} className="space-y-5">
         <div className="space-y-2">
-          <Label htmlFor="forgot-email" className="flex items-center gap-2">
-            <Mail className="w-4 h-4 text-primary" />
+          <Label htmlFor="forgot-email" className="flex items-center gap-2 font-semibold text-foreground">
+            <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
             Email Address
           </Label>
           <Input 
@@ -381,22 +440,22 @@ export default function AuthPage() {
       </div>
       
       <div className="space-y-3">
-        <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-400 dark:to-emerald-400 bg-clip-text text-transparent">
+        <h3 className="text-3xl font-bold bg-gradient-to-r from-green-600 via-emerald-600 to-teal-600 dark:from-green-400 dark:via-emerald-400 dark:to-teal-400 bg-clip-text text-transparent">
           Check Your Email
         </h3>
         <div className="space-y-2">
-          <p className="text-muted-foreground">
+          <p className="text-gray-700 dark:text-gray-300 font-medium">
             We've sent a password reset link to
           </p>
-          <p className="font-semibold text-lg text-primary break-all px-4">
+          <p className="font-bold text-lg text-blue-700 dark:text-blue-300 break-all px-4">
             {email}
           </p>
         </div>
       </div>
 
       <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 rounded-2xl p-6 space-y-3 border-2 border-primary/10">
-        <p className="text-sm font-medium text-foreground">Next steps:</p>
-        <div className="space-y-2 text-sm text-muted-foreground text-left">
+        <p className="text-sm font-bold text-foreground">Next steps:</p>
+        <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300 text-left font-medium">
           <div className="flex items-start gap-3">
             <span className="flex-shrink-0 w-6 h-6 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-xs">1</span>
             <p>Check your inbox (and spam folder)</p>
@@ -413,7 +472,7 @@ export default function AuthPage() {
       </div>
 
       <div className="space-y-3 pt-4">
-        <p className="text-sm text-muted-foreground">Didn't receive the email?</p>
+        <p className="text-sm text-gray-700 dark:text-gray-300 font-medium">Didn't receive the email?</p>
         <div className="flex flex-col gap-2">
           <Button 
             variant="outline" 
@@ -505,10 +564,10 @@ export default function AuthPage() {
             </div>
             
             <div className="space-y-2">
-              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+              <CardTitle className="text-3xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-300 dark:via-purple-300 dark:to-pink-300 bg-clip-text text-transparent">
                 SMS Gateway
               </CardTitle>
-              <CardDescription className="text-base">
+              <CardDescription className="text-base text-gray-700 dark:text-gray-300 font-medium">
                 {mode === "signin" && "Welcome back! Sign in to continue"}
                 {mode === "signup" && "Create your account to get started"}
                 {mode === "forgot" && "Reset your password securely"}
@@ -518,18 +577,56 @@ export default function AuthPage() {
           </CardHeader>
 
           <CardContent className="pb-8">
-            {mode === "signin" && renderSignIn()}
-            {mode === "signup" && renderSignUp()}
-            {mode === "forgot" && renderForgotPassword()}
-            {mode === "reset-sent" && renderResetSent()}
+            <div key={mode} className="animate-fade-slide-in">
+              {mode === "signin" && renderSignIn()}
+              {mode === "signup" && renderSignUp()}
+              {mode === "forgot" && renderForgotPassword()}
+              {mode === "reset-sent" && renderResetSent()}
+            </div>
           </CardContent>
         </Card>
         
         {/* Footer Text */}
-        <p className="text-center text-sm text-muted-foreground mt-6">
+        <p className="text-center text-sm text-gray-600 dark:text-gray-400 mt-6 font-medium">
           Secured by enterprise-grade encryption 🔒
         </p>
       </div>
+
+      {/* Loading Overlay with Spinner */}
+      {isRedirecting && (
+        <div className="fixed inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-50 flex items-center justify-center transition-all duration-500 animate-fade-in">
+          <div className="text-center space-y-6">
+            {/* Spinner */}
+            <div className="relative">
+              <div className="w-20 h-20 mx-auto">
+                <div className="absolute inset-0 border-4 border-blue-200 dark:border-blue-900 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-transparent border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
+              </div>
+              {/* Pulsing ring */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-20 h-20 border-2 border-blue-400/30 dark:border-blue-500/30 rounded-full animate-ping"></div>
+              </div>
+            </div>
+            
+            {/* Loading text */}
+            <div className="space-y-2">
+              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
+                Loading Dashboard
+              </h3>
+              <p className="text-sm text-gray-600 dark:text-gray-400 animate-pulse">
+                Please wait...
+              </p>
+            </div>
+
+            {/* Decorative elements */}
+            <div className="flex justify-center gap-2">
+              <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+              <div className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+              <div className="w-2 h-2 bg-pink-600 dark:bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            </div>
+          </div>
+        </div>
+      )}
 
       <style>{`
         @keyframes slideRight {
@@ -557,6 +654,16 @@ export default function AuthPage() {
           50% { transform: scale(1.1); }
           100% { transform: scale(1); }
         }
+        @keyframes fade-slide-in {
+          0% { 
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          100% { 
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
         .animate-float {
           animation: float 6s ease-in-out infinite;
         }
@@ -571,6 +678,9 @@ export default function AuthPage() {
         }
         .animate-scale-in {
           animation: scale-in 0.5s ease-out;
+        }
+        .animate-fade-slide-in {
+          animation: fade-slide-in 0.4s ease-out;
         }
       `}</style>
     </div>

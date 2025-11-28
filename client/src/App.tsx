@@ -9,22 +9,33 @@ import Home from "@/pages/home";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
 import LoadingIntro from "@/components/loading-intro";
+import { ErrorBoundary } from "@/components/error-boundary";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
   const [showIntro, setShowIntro] = useState(true);
   const [introComplete, setIntroComplete] = useState(false);
+  const [hasSeenIntro, setHasSeenIntro] = useState(false);
 
   useEffect(() => {
     // Initialize dark theme immediately
     document.documentElement.classList.add('dark');
+    
+    // Check if user has already seen intro (stored in sessionStorage)
+    const seenIntro = sessionStorage.getItem('introSeen');
+    if (seenIntro === 'true') {
+      setShowIntro(false);
+      setIntroComplete(true);
+      setHasSeenIntro(true);
+    }
   }, []);
 
-  if (showIntro && !introComplete) {
+  if (showIntro && !introComplete && !hasSeenIntro) {
     return (
       <LoadingIntro 
         onComplete={() => {
           setIntroComplete(true);
+          sessionStorage.setItem('introSeen', 'true');
           setTimeout(() => setShowIntro(false), 100);
         }} 
       />
@@ -52,12 +63,14 @@ function Router() {
 
 function App() {
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Router />
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ErrorBoundary>
+      <QueryClientProvider client={queryClient}>
+        <TooltipProvider>
+          <Toaster />
+          <Router />
+        </TooltipProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 }
 

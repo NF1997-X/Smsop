@@ -2,8 +2,9 @@ import type { Express, RequestHandler } from "express";
 import { createServer, type Server } from "http";
 import session from "express-session";
 import { storage } from "./storage";
-import { insertContactSchema, insertMessageSchema, updateSettingsSchema } from "@shared/schema";
+import { insertContactSchema, insertMessageSchema, updateSettingsSchema, insertUserSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
+import bcrypt from "bcrypt";
 
 // Simple session middleware
 const sessionMiddleware = session({
@@ -29,7 +30,104 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Setup session middleware
   app.use(sessionMiddleware);
 
-  // Password access route
+  // Sign up route
+  app.post('/api/auth/signup', async (req, res) => {
+    try {
+      console.log("Sign up attempt:", req.body.email);
+      
+      const validatedData = insertUserSchema.parse(req.body);
+      
+      // Check if user already exists
+      const existingUser = await storage.getUserByEmail(validatedData.email);
+      if (existingUser) {
+        console.log("User already exists:", validatedData.email);
+        return res.status(400).json({ message: "User already exists" });
+      }
+      
+      console.log("Creating new user:", validatedData.email);
+      
+      // Hash password
+      const hashedPassword = await bcrypt.hash(validatedData.password, 10);
+      
+      // Create user
+      const user = await storage.createUser({
+        email: validatedData.email,
+        password: hashedPassword,
+        fullName: validatedData.fullName,
+      });
+      
+      console.log("User created successfully:", user.id, user.email);
+      
+      // Set session
+      (req.session as any).authenticated = true;
+      (req.session as any).userId = user.id;
+      
+      res.status(201).json({ 
+        success: true, 
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          fullName: user.fullName 
+        } 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.log("Validation error:", error.errors);
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Signup error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Sign in route
+  app.post('/api/auth/signin', async (req, res) => {
+    try {
+      const validatedData = loginSchema.parse(req.body);
+      
+      console.log("Sign in attempt for:", validatedData.email);
+      
+      // Find user
+      const user = await storage.getUserByEmail(validatedData.email);
+      if (!user) {
+        console.log("User not found:", validatedData.email);
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      console.log("User found, verifying password");
+      
+      // Verify password
+      const isPasswordValid = await bcrypt.compare(validatedData.password, user.password);
+      if (!isPasswordValid) {
+        console.log("Invalid password for:", validatedData.email);
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+      
+      console.log("Login successful for:", validatedData.email);
+      
+      // Set session
+      (req.session as any).authenticated = true;
+      (req.session as any).userId = user.id;
+      
+      res.json({ 
+        success: true, 
+        user: { 
+          id: user.id, 
+          email: user.email, 
+          fullName: user.fullName 
+        } 
+      });
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        console.log("Validation error:", error.errors);
+        return res.status(400).json({ message: "Invalid data", errors: error.errors });
+      }
+      console.error("Signin error:", error);
+      res.status(500).json({ message: "Server error" });
+    }
+  });
+
+  // Password access route (legacy, keep for backward compatibility)
   app.post('/api/access', async (req, res) => {
     try {
       const { password } = req.body;

@@ -6,6 +6,8 @@ import { randomUUID } from "crypto";
 export interface IStorage {
   // Users
   getUser(id: string): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: { email: string; password: string; fullName: string }): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Contacts
@@ -45,6 +47,27 @@ export class MemStorage implements IStorage {
   // Users
   async getUser(id: string): Promise<User | undefined> {
     return this.users.get(id);
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    return Array.from(this.users.values()).find(u => u.email === email);
+  }
+
+  async createUser(userData: { email: string; password: string; fullName: string }): Promise<User> {
+    const id = randomUUID();
+    const newUser: User = {
+      id,
+      email: userData.email,
+      password: userData.password,
+      fullName: userData.fullName,
+      firstName: null,
+      lastName: null,
+      profileImageUrl: null,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    this.users.set(id, newUser);
+    return newUser;
   }
 
   async upsertUser(userData: UpsertUser): Promise<User> {
@@ -205,6 +228,19 @@ export class DatabaseStorage implements IStorage {
   // Users
   async getUser(id: string): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: { email: string; password: string; fullName: string }): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
     return user;
   }
 
