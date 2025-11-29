@@ -5,7 +5,7 @@ import session from 'express-session';
 import bcrypt from 'bcrypt';
 import { eq } from 'drizzle-orm';
 import { db } from './db.js';
-import { users, insertUserSchema, loginSchema } from './schema.js';
+import { users, settings, insertUserSchema, loginSchema, updateSettingsSchema } from './schema.js';
 
 const app = express();
 app.use(express.json());
@@ -113,6 +113,60 @@ app.post('/api/auth/logout', (req, res) => {
     }
     res.json({ message: "Logged out successfully" });
   });
+});
+
+// Settings routes
+app.get('/api/settings', isAuthenticated, async (req, res) => {
+  try {
+    const [userSettings] = await db.select().from(settings).limit(1);
+    
+    if (!userSettings) {
+      // Return default settings if none exist
+      return res.json({
+        apiKey: null,
+        token: null,
+        apiEndpoint: "https://textbelt.com/text",
+        defaultCountryCode: "+1",
+        autoSaveDrafts: true,
+        messageConfirmations: false,
+      });
+    }
+    
+    res.json(userSettings);
+  } catch (error) {
+    console.error('[Settings] Get error:', error);
+    res.status(500).json({ message: "Failed to fetch settings" });
+  }
+});
+
+app.post('/api/settings', isAuthenticated, async (req, res) => {
+  try {
+    console.log('[Settings] Update attempt:', req.body);
+    const validatedData = updateSettingsSchema.parse(req.body);
+    
+    // Check if settings exist
+    const [existingSettings] = await db.select().from(settings).limit(1);
+    
+    let result;
+    if (existingSettings) {
+      // Update existing settings
+      [result] = await db.update(settings)
+        .set(validatedData)
+        .where(eq(settings.id, existingSettings.id))
+        .returning();
+    } else {
+      // Insert new settings
+      [result] = await db.insert(settings)
+        .values(validatedData)
+        .returning();
+    }
+    
+    console.log('[Settings] Update success:', result);
+    res.json(result);
+  } catch (error) {
+    console.error('[Settings] Update error:', error);
+    res.status(400).json({ message: error.message || "Failed to update settings" });
+  }
 });
 
 // Other API routes would go here (contacts, messages, etc.)

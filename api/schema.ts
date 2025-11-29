@@ -16,6 +16,17 @@ export const users = pgTable("users", {
   updatedAt: timestamp("updated_at").defaultNow(),
 });
 
+// Settings table
+export const settings = pgTable("settings", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  apiKey: text("api_key"),
+  token: text("token"),
+  apiEndpoint: text("api_endpoint").default("https://textbelt.com/text"),
+  defaultCountryCode: text("default_country_code").default("+1"),
+  autoSaveDrafts: boolean("auto_save_drafts").default(true),
+  messageConfirmations: boolean("message_confirmations").default(false),
+});
+
 export const insertUserSchema = createInsertSchema(users, {
   email: z.string().email(),
   password: z.string().min(8),
@@ -34,6 +45,14 @@ export const loginSchema = z.object({
   password: z.string(),
 });
 
+export const insertSettingsSchema = createInsertSchema(settings).omit({
+  id: true,
+});
+
+export const updateSettingsSchema = insertSettingsSchema.partial();
+
 export type User = typeof users.$inferSelect;
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type LoginUser = z.infer<typeof loginSchema>;
+export type Settings = typeof settings.$inferSelect;
+export type UpdateSettings = z.infer<typeof updateSettingsSchema>;

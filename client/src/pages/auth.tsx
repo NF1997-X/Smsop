@@ -55,10 +55,10 @@ export default function AuthPage() {
         sessionStorage.setItem('isRedirecting', 'true');
         // Invalidate auth query to refresh authentication status
         await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Extended smooth transition before redirect
+        // Quick transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 1500);
+        }, 600);
       } else {
         console.error("Sign in failed:", data);
         toast({ 
@@ -113,10 +113,10 @@ export default function AuthPage() {
         sessionStorage.setItem('isRedirecting', 'true');
         // Invalidate auth query to refresh authentication status
         await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Extended smooth transition before redirect
+        // Quick transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 1500);
+        }, 600);
       } else {
         console.error("Signup failed:", data);
         toast({ 
@@ -602,7 +602,7 @@ export default function AuthPage() {
 
       {/* Loading Overlay with Ultra Smooth Spinner */}
       {isRedirecting && (
-        <div className="fixed inset-0 bg-gradient-to-br from-white/95 via-blue-50/95 to-purple-50/95 dark:from-gray-900/95 dark:via-blue-950/95 dark:to-purple-950/95 backdrop-blur-xl z-50 flex items-center justify-center transition-all duration-700 animate-fade-in">
+        <div className="fixed inset-0 bg-gradient-to-br from-white/98 via-blue-50/98 to-purple-50/98 dark:from-gray-900/98 dark:via-blue-950/98 dark:to-purple-950/98 backdrop-blur-xl z-[9999] flex items-center justify-center transition-all duration-700 animate-fade-in">
           <div className="text-center space-y-8 animate-scale-in">
             {/* Multi-layered Spinner */}
             <div className="relative">
