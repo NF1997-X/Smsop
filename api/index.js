@@ -169,6 +169,71 @@ app.post('/api/settings', isAuthenticated, async (req, res) => {
   }
 });
 
+// Test Textbelt connection
+app.post('/api/settings/test', isAuthenticated, async (req, res) => {
+  try {
+    const { apiKey, apiEndpoint } = req.body;
+    
+    if (!apiKey) {
+      return res.status(400).json({ message: "API key is required" });
+    }
+    
+    const endpoint = apiEndpoint || "https://textbelt.com/text";
+    
+    // Test with a quota check
+    const response = await fetch(`https://textbelt.com/quota/${apiKey}`);
+    const data = await response.json();
+    
+    if (data.success === false) {
+      return res.status(400).json({ message: data.error || "Invalid API key" });
+    }
+    
+    res.json({ 
+      success: true, 
+      quotaRemaining: data.quotaRemaining,
+      message: `Connection successful. ${data.quotaRemaining} messages remaining.`
+    });
+  } catch (error) {
+    console.error('[Settings] Test error:', error);
+    res.status(500).json({ message: "Failed to test connection" });
+  }
+});
+
+// Get account balance
+app.get('/api/account/balance', isAuthenticated, async (req, res) => {
+  try {
+    const [userSettings] = await db.select().from(settings).limit(1);
+    
+    if (!userSettings?.apiKey) {
+      return res.status(400).json({ 
+        message: "API key not configured", 
+        balance: null 
+      });
+    }
+    
+    const response = await fetch(`https://textbelt.com/quota/${userSettings.apiKey}`);
+    const data = await response.json();
+    
+    if (data.success === false) {
+      return res.status(400).json({ 
+        message: data.error || "Failed to fetch balance",
+        balance: null
+      });
+    }
+    
+    res.json({ 
+      balance: data.quotaRemaining,
+      success: true
+    });
+  } catch (error) {
+    console.error('[Balance] Error:', error);
+    res.status(500).json({ 
+      message: "Failed to fetch balance",
+      balance: null
+    });
+  }
+});
+
 // Other API routes would go here (contacts, messages, etc.)
 // For now, just return 404 for unhandled routes
 app.use('/api/*', (req, res) => {

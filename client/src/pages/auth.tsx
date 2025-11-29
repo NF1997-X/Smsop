@@ -51,14 +51,12 @@ export default function AuthPage() {
         toast({ title: "Welcome back!", description: "Successfully signed in." });
         // Show smooth loading transition
         setIsRedirecting(true);
-        // Set redirect flag to prevent auth page flash
-        sessionStorage.setItem('isRedirecting', 'true');
         // Invalidate auth query to refresh authentication status
         await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Quick transition before redirect
+        // Quick smooth transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 600);
+        }, 800);
       } else {
         console.error("Sign in failed:", data);
         toast({ 
@@ -109,14 +107,12 @@ export default function AuthPage() {
         });
         // Show smooth loading transition
         setIsRedirecting(true);
-        // Set redirect flag to prevent auth page flash
-        sessionStorage.setItem('isRedirecting', 'true');
         // Invalidate auth query to refresh authentication status
         await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Quick transition before redirect
+        // Quick smooth transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 600);
+        }, 800);
       } else {
         console.error("Signup failed:", data);
         toast({ 
