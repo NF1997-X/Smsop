@@ -60,6 +60,8 @@ async function upsertUser(
   await storage.upsertUser({
     id: claims["sub"],
     email: claims["email"],
+    password: "",
+    fullName: `${claims["first_name"] || ""} ${claims["last_name"] || ""}`.trim() || claims["email"],
     firstName: claims["first_name"],
     lastName: claims["last_name"],
     profileImageUrl: claims["profile_image_url"],

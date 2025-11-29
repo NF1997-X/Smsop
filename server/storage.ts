@@ -90,6 +90,8 @@ export class MemStorage implements IStorage {
       const newUser: User = {
         id: userData.id,
         email: userData.email ?? null,
+        password: userData.password ?? "",
+        fullName: userData.fullName ?? "",
         firstName: userData.firstName ?? null,
         lastName: userData.lastName ?? null,
         profileImageUrl: userData.profileImageUrl ?? null,

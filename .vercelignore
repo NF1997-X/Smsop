@@ -1,0 +1,5 @@
+# Vercel Deployment
+
+node_modules
+.env.local
+.env
