@@ -49,14 +49,16 @@ export default function AuthPage() {
       
       if (response.ok) {
         toast({ title: "Welcome back!", description: "Successfully signed in." });
-        // Show loading transition
+        // Show smooth loading transition
         setIsRedirecting(true);
+        // Set redirect flag to prevent auth page flash
+        sessionStorage.setItem('isRedirecting', 'true');
         // Invalidate auth query to refresh authentication status
         await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Smooth transition before redirect
+        // Extended smooth transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 800);
+        }, 1500);
       } else {
         console.error("Sign in failed:", data);
         toast({ 
@@ -105,14 +107,16 @@ export default function AuthPage() {
           title: "Account created!", 
           description: "Welcome! Redirecting to dashboard..." 
         });
-        // Show loading transition
+        // Show smooth loading transition
         setIsRedirecting(true);
+        // Set redirect flag to prevent auth page flash
+        sessionStorage.setItem('isRedirecting', 'true');
         // Invalidate auth query to refresh authentication status
         await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Smooth transition before redirect
+        // Extended smooth transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 800);
+        }, 1500);
       } else {
         console.error("Signup failed:", data);
         toast({ 
@@ -592,37 +596,54 @@ export default function AuthPage() {
         </p>
       </div>
 
-      {/* Loading Overlay with Spinner */}
+      {/* Loading Overlay with Ultra Smooth Spinner */}
       {isRedirecting && (
-        <div className="fixed inset-0 bg-white/80 dark:bg-gray-900/80 backdrop-blur-md z-50 flex items-center justify-center transition-all duration-500 animate-fade-in">
-          <div className="text-center space-y-6">
-            {/* Spinner */}
+        <div className="fixed inset-0 bg-gradient-to-br from-white/95 via-blue-50/95 to-purple-50/95 dark:from-gray-900/95 dark:via-blue-950/95 dark:to-purple-950/95 backdrop-blur-xl z-50 flex items-center justify-center transition-all duration-700 animate-fade-in">
+          <div className="text-center space-y-8 animate-scale-in">
+            {/* Multi-layered Spinner */}
             <div className="relative">
-              <div className="w-20 h-20 mx-auto">
-                <div className="absolute inset-0 border-4 border-blue-200 dark:border-blue-900 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-transparent border-t-blue-600 dark:border-t-blue-400 rounded-full animate-spin"></div>
+              <div className="w-24 h-24 mx-auto">
+                {/* Outer rotating ring */}
+                <div className="absolute inset-0 border-4 border-blue-200/40 dark:border-blue-800/40 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-transparent border-t-blue-600 border-r-purple-600 dark:border-t-blue-400 dark:border-r-purple-400 rounded-full animate-spin" style={{ animationDuration: '1s' }}></div>
+                
+                {/* Middle ring */}
+                <div className="absolute inset-2 border-4 border-purple-200/40 dark:border-purple-800/40 rounded-full"></div>
+                <div className="absolute inset-2 border-4 border-transparent border-b-purple-600 border-l-pink-600 dark:border-b-purple-400 dark:border-l-pink-400 rounded-full animate-spin" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }}></div>
+                
+                {/* Inner core */}
+                <div className="absolute inset-6 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 rounded-full opacity-30 animate-pulse"></div>
               </div>
-              {/* Pulsing ring */}
+              
+              {/* Expanding rings */}
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-20 h-20 border-2 border-blue-400/30 dark:border-blue-500/30 rounded-full animate-ping"></div>
+                <div className="w-24 h-24 border-2 border-blue-400/20 dark:border-blue-500/20 rounded-full animate-ping"></div>
+              </div>
+              <div className="absolute inset-0 flex items-center justify-center" style={{ animationDelay: '0.5s' }}>
+                <div className="w-24 h-24 border-2 border-purple-400/20 dark:border-purple-500/20 rounded-full animate-ping"></div>
               </div>
             </div>
             
-            {/* Loading text */}
-            <div className="space-y-2">
-              <h3 className="text-xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent">
-                Loading Dashboard
+            {/* Loading text with gradient animation */}
+            <div className="space-y-3">
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent animate-gradient">
+                Preparing Your Dashboard
               </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-400 animate-pulse">
-                Please wait...
+              <p className="text-base text-gray-700 dark:text-gray-300 font-medium animate-pulse">
+                Setting up your workspace...
               </p>
             </div>
 
-            {/* Decorative elements */}
-            <div className="flex justify-center gap-2">
-              <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-              <div className="w-2 h-2 bg-purple-600 dark:bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-              <div className="w-2 h-2 bg-pink-600 dark:bg-pink-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+            {/* Enhanced animated dots */}
+            <div className="flex justify-center gap-3">
+              <div className="w-3 h-3 bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-400 dark:to-blue-300 rounded-full animate-bounce shadow-lg shadow-blue-500/50" style={{ animationDelay: '0ms', animationDuration: '0.6s' }}></div>
+              <div className="w-3 h-3 bg-gradient-to-r from-purple-600 to-purple-500 dark:from-purple-400 dark:to-purple-300 rounded-full animate-bounce shadow-lg shadow-purple-500/50" style={{ animationDelay: '150ms', animationDuration: '0.6s' }}></div>
+              <div className="w-3 h-3 bg-gradient-to-r from-pink-600 to-pink-500 dark:from-pink-400 dark:to-pink-300 rounded-full animate-bounce shadow-lg shadow-pink-500/50" style={{ animationDelay: '300ms', animationDuration: '0.6s' }}></div>
+            </div>
+
+            {/* Progress indicator */}
+            <div className="w-64 h-1.5 mx-auto bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+              <div className="h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 rounded-full animate-progress"></div>
             </div>
           </div>
         </div>
@@ -650,9 +671,17 @@ export default function AuthPage() {
           50% { opacity: 0.6; }
         }
         @keyframes scale-in {
-          0% { transform: scale(0); }
-          50% { transform: scale(1.1); }
-          100% { transform: scale(1); }
+          0% { 
+            transform: scale(0.8);
+            opacity: 0;
+          }
+          50% { 
+            transform: scale(1.05);
+          }
+          100% { 
+            transform: scale(1);
+            opacity: 1;
+          }
         }
         @keyframes fade-slide-in {
           0% { 
@@ -662,6 +691,30 @@ export default function AuthPage() {
           100% { 
             opacity: 1;
             transform: translateY(0);
+          }
+        }
+        @keyframes fade-in {
+          0% { 
+            opacity: 0;
+          }
+          100% { 
+            opacity: 1;
+          }
+        }
+        @keyframes progress {
+          0% { 
+            transform: translateX(-100%);
+          }
+          100% { 
+            transform: translateX(100%);
+          }
+        }
+        @keyframes gradient {
+          0%, 100% { 
+            background-position: 0% 50%;
+          }
+          50% { 
+            background-position: 100% 50%;
           }
         }
         .animate-float {
@@ -677,10 +730,20 @@ export default function AuthPage() {
           animation: pulse-slow 4s ease-in-out infinite;
         }
         .animate-scale-in {
-          animation: scale-in 0.5s ease-out;
+          animation: scale-in 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
         .animate-fade-slide-in {
           animation: fade-slide-in 0.4s ease-out;
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out;
+        }
+        .animate-progress {
+          animation: progress 1.5s ease-in-out infinite;
+        }
+        .animate-gradient {
+          background-size: 200% 200%;
+          animation: gradient 3s ease infinite;
         }
       `}</style>
     </div>
