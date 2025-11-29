@@ -147,19 +147,21 @@ export default function AuthPage() {
   };
 
   const renderSignIn = () => (
-    <form onSubmit={handleSignIn} className="space-y-5">
+    <form onSubmit={handleSignIn} className="space-y-5" autoComplete="on">
       <div className="space-y-2">
         <Label htmlFor="signin-email" className="flex items-center gap-2 text-sm font-semibold text-foreground">
           <Mail className="w-4 h-4 text-blue-600 dark:text-blue-400" />
           Email Address
         </Label>
         <Input 
-          id="signin-email" 
+          id="signin-email"
+          name="email"
           type="email" 
           placeholder="name@company.com" 
           value={email} 
           onChange={(e) => setEmail(e.target.value)} 
           className="h-12 bg-muted/30 border-2 focus:border-primary focus:bg-background transition-all" 
+          autoComplete="email"
           required 
         />
       </div>
@@ -180,12 +182,14 @@ export default function AuthPage() {
         </div>
         <div className="relative">
           <Input 
-            id="signin-password" 
+            id="signin-password"
+            name="password"
             type={showPassword ? "text" : "password"} 
             placeholder="Enter your password" 
             value={password} 
             onChange={(e) => setPassword(e.target.value)} 
             className="h-12 pr-12 bg-muted/30 border-2 focus:border-primary focus:bg-background transition-all" 
+            autoComplete="current-password"
             required 
           />
           <button
@@ -549,8 +553,8 @@ export default function AuthPage() {
       </div>
 
       {/* Auth Card */}
-      <div className="w-full max-w-md px-4 relative z-10">
-        <Card className="shadow-2xl border-2 border-gray-200/50 dark:border-gray-800/50 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 overflow-hidden">
+      <div className="w-full max-w-md px-4 relative z-10" style={{ willChange: 'transform', transform: 'translateZ(0)' }}>
+        <Card className="shadow-2xl border-2 border-gray-200/50 dark:border-gray-800/50 backdrop-blur-xl bg-white/80 dark:bg-gray-900/80 overflow-hidden" style={{ backfaceVisibility: 'hidden', perspective: '1000px' }}>
           {/* Decorative Header Gradient */}
           <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600" />
           
@@ -650,6 +654,38 @@ export default function AuthPage() {
       )}
 
       <style>{`
+        * {
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+        }
+        body, html {
+          overflow-x: hidden;
+        }
+        form {
+          isolation: isolate;
+        }
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+          -webkit-text-fill-color: inherit;
+          -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+          transition: background-color 5000s ease-in-out 0s;
+          background-color: transparent !important;
+        }
+        input:-webkit-autofill {
+          animation-name: onAutoFillStart;
+        }
+        input:not(:-webkit-autofill) {
+          animation-name: onAutoFillCancel;
+        }
+        @keyframes onAutoFillStart {
+          from { /**/}
+          to { /**/}
+        }
+        @keyframes onAutoFillCancel {
+          from { /**/}
+          to { /**/}
+        }
         @keyframes slideRight {
           0% { transform: translateX(-100%); }
           100% { transform: translateX(100%); }
