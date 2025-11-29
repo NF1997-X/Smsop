@@ -1,5 +1,15 @@
-# Vercel Deployment
+# Vercel Deployment - Ignore these files
 
 node_modules
 .env.local
 .env
+.git
+.gitignore
+
+# Documentation and scripts
+*.md
+*.sh
+
+# Build configs not needed in production
+tsconfig.server.json
+.replit

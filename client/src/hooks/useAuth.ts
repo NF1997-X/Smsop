@@ -5,6 +5,9 @@ export function useAuth() {
   const { data: authStatus, isLoading } = useQuery<{ authenticated: boolean }>({
     queryKey: ["/api/auth/status"],
     retry: false,
+    staleTime: 5 * 60 * 1000, // 5 minutes - prevent excessive re-fetching
+    refetchOnWindowFocus: false,
+    refetchOnMount: false,
   });
 
   const logoutTimerRef = useRef<NodeJS.Timeout | null>(null);
