@@ -38,6 +38,14 @@ export default function AuthPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    
+    // Prevent any flicker by hiding form immediately
+    const formElement = e.currentTarget as HTMLFormElement;
+    if (formElement) {
+      formElement.style.opacity = '0';
+      formElement.style.pointerEvents = 'none';
+    }
+    
     try {
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
@@ -48,17 +56,21 @@ export default function AuthPage() {
       const data = await response.json();
       
       if (response.ok) {
-        toast({ title: "Welcome back!", description: "Successfully signed in." });
-        // Show smooth loading transition
+        // Show loading immediately
         setIsRedirecting(true);
-        // Invalidate auth query to refresh authentication status
-        await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Quick smooth transition before redirect
+        
+        // Don't invalidate queries - just redirect directly
+        // The app will fetch fresh auth status on load
         setTimeout(() => {
           window.location.href = "/";
-        }, 800);
+        }, 300);
       } else {
         console.error("Sign in failed:", data);
+        // Restore form if failed
+        if (formElement) {
+          formElement.style.opacity = '1';
+          formElement.style.pointerEvents = 'auto';
+        }
         toast({ 
           title: "Sign in failed", 
           description: data.message || "Invalid email or password.", 
@@ -67,6 +79,11 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("Sign in error:", error);
+      // Restore form if failed
+      if (formElement) {
+        formElement.style.opacity = '1';
+        formElement.style.pointerEvents = 'auto';
+      }
       toast({ title: "Error", description: "Connection failed. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
@@ -84,6 +101,14 @@ export default function AuthPage() {
       return;
     }
     setIsLoading(true);
+    
+    // Prevent any flicker by hiding form immediately
+    const formElement = e.currentTarget as HTMLFormElement;
+    if (formElement) {
+      formElement.style.opacity = '0';
+      formElement.style.pointerEvents = 'none';
+    }
+    
     try {
       console.log("Attempting signup with:", { email, fullName });
       
@@ -101,20 +126,20 @@ export default function AuthPage() {
       console.log("Signup response:", data);
       
       if (response.ok) {
-        toast({ 
-          title: "Account created!", 
-          description: "Welcome! Redirecting to dashboard..." 
-        });
-        // Show smooth loading transition
+        // Show loading immediately
         setIsRedirecting(true);
-        // Invalidate auth query to refresh authentication status
-        await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
-        // Quick smooth transition before redirect
+        
+        // Don't invalidate queries - just redirect directly
         setTimeout(() => {
           window.location.href = "/";
-        }, 800);
+        }, 300);
       } else {
         console.error("Signup failed:", data);
+        // Restore form if failed
+        if (formElement) {
+          formElement.style.opacity = '1';
+          formElement.style.pointerEvents = 'auto';
+        }
         toast({ 
           title: "Sign up failed", 
           description: data.message || "Please try again.", 
@@ -123,6 +148,11 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("Signup error:", error);
+      // Restore form if failed
+      if (formElement) {
+        formElement.style.opacity = '1';
+        formElement.style.pointerEvents = 'auto';
+      }
       toast({ title: "Error", description: "Connection failed. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
@@ -656,16 +686,25 @@ export default function AuthPage() {
         }
         body, html {
           overflow-x: hidden;
+          overflow-y: auto;
+          position: fixed;
+          width: 100%;
+          height: 100%;
         }
         form {
           isolation: isolate;
+          contain: layout style paint;
+          transition: opacity 0.2s ease;
+        }
+        input, button {
+          contain: layout;
         }
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus {
-          -webkit-text-fill-color: inherit;
-          -webkit-box-shadow: 0 0 0px 1000px transparent inset;
-          transition: background-color 5000s ease-in-out 0s;
+          -webkit-text-fill-color: inherit !important;
+          -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
+          transition: background-color 5000s ease-in-out 0s !important;
           background-color: transparent !important;
         }
         input:-webkit-autofill {
@@ -673,6 +712,12 @@ export default function AuthPage() {
         }
         input:not(:-webkit-autofill) {
           animation-name: onAutoFillCancel;
+        }
+        /* Prevent chrome password popup from causing reflow */
+        input[type="password"],
+        input[type="email"] {
+          will-change: auto;
+          transform: translateZ(0);
         }
         @keyframes onAutoFillStart {
           from { /**/}
