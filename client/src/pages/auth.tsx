@@ -6,7 +6,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Lock, Send, MessageSquare, Smartphone, Zap, Moon, Sun, User, Eye, EyeOff, ArrowLeft, KeyRound, CheckCircle2, Sparkles, Shield, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { useQueryClient } from "@tanstack/react-query";
 
 type AuthMode = "signin" | "signup" | "forgot" | "reset-sent";
 
@@ -19,11 +18,9 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [isRedirecting, setIsRedirecting] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const { toast} = useToast();
   const [, setLocation] = useLocation();
-  const queryClient = useQueryClient();
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -56,14 +53,20 @@ export default function AuthPage() {
       const data = await response.json();
       
       if (response.ok) {
-        // Show loading immediately
-        setIsRedirecting(true);
+        // Set flag to indicate user is authenticated (prevent flash)
+        sessionStorage.setItem('isAuthenticating', 'true');
         
-        // Don't invalidate queries - just redirect directly
-        // The app will fetch fresh auth status on load
+        // Smooth fade out transition
+        const pageElement = document.querySelector('body');
+        if (pageElement) {
+          pageElement.style.transition = 'opacity 500ms ease-out';
+          pageElement.style.opacity = '0';
+        }
+        
+        // Redirect after fade animation
         setTimeout(() => {
           window.location.href = "/";
-        }, 300);
+        }, 500);
       } else {
         console.error("Sign in failed:", data);
         // Restore form if failed
@@ -126,13 +129,20 @@ export default function AuthPage() {
       console.log("Signup response:", data);
       
       if (response.ok) {
-        // Show loading immediately
-        setIsRedirecting(true);
+        // Set flag to indicate user is authenticated (prevent flash)
+        sessionStorage.setItem('isAuthenticating', 'true');
         
-        // Don't invalidate queries - just redirect directly
+        // Smooth fade out transition
+        const pageElement = document.querySelector('body');
+        if (pageElement) {
+          pageElement.style.transition = 'opacity 500ms ease-out';
+          pageElement.style.opacity = '0';
+        }
+        
+        // Redirect after fade animation
         setTimeout(() => {
           window.location.href = "/";
-        }, 300);
+        }, 500);
       } else {
         console.error("Signup failed:", data);
         // Restore form if failed
@@ -625,59 +635,6 @@ export default function AuthPage() {
           Secured by enterprise-grade encryption 🔒
         </p>
       </div>
-
-      {/* Loading Overlay with Ultra Smooth Spinner */}
-      {isRedirecting && (
-        <div className="fixed inset-0 bg-gradient-to-br from-white/98 via-blue-50/98 to-purple-50/98 dark:from-gray-900/98 dark:via-blue-950/98 dark:to-purple-950/98 backdrop-blur-xl z-[9999] flex items-center justify-center transition-all duration-700 animate-fade-in">
-          <div className="text-center space-y-8 animate-scale-in">
-            {/* Multi-layered Spinner */}
-            <div className="relative">
-              <div className="w-24 h-24 mx-auto">
-                {/* Outer rotating ring */}
-                <div className="absolute inset-0 border-4 border-blue-200/40 dark:border-blue-800/40 rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-transparent border-t-blue-600 border-r-purple-600 dark:border-t-blue-400 dark:border-r-purple-400 rounded-full animate-spin" style={{ animationDuration: '1s' }}></div>
-                
-                {/* Middle ring */}
-                <div className="absolute inset-2 border-4 border-purple-200/40 dark:border-purple-800/40 rounded-full"></div>
-                <div className="absolute inset-2 border-4 border-transparent border-b-purple-600 border-l-pink-600 dark:border-b-purple-400 dark:border-l-pink-400 rounded-full animate-spin" style={{ animationDuration: '1.5s', animationDirection: 'reverse' }}></div>
-                
-                {/* Inner core */}
-                <div className="absolute inset-6 bg-gradient-to-br from-blue-500 via-purple-500 to-pink-500 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 rounded-full opacity-30 animate-pulse"></div>
-              </div>
-              
-              {/* Expanding rings */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-24 h-24 border-2 border-blue-400/20 dark:border-blue-500/20 rounded-full animate-ping"></div>
-              </div>
-              <div className="absolute inset-0 flex items-center justify-center" style={{ animationDelay: '0.5s' }}>
-                <div className="w-24 h-24 border-2 border-purple-400/20 dark:border-purple-500/20 rounded-full animate-ping"></div>
-              </div>
-            </div>
-            
-            {/* Loading text with gradient animation */}
-            <div className="space-y-3">
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent animate-gradient">
-                Preparing Your Dashboard
-              </h3>
-              <p className="text-base text-gray-700 dark:text-gray-300 font-medium animate-pulse">
-                Setting up your workspace...
-              </p>
-            </div>
-
-            {/* Enhanced animated dots */}
-            <div className="flex justify-center gap-3">
-              <div className="w-3 h-3 bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-400 dark:to-blue-300 rounded-full animate-bounce shadow-lg shadow-blue-500/50" style={{ animationDelay: '0ms', animationDuration: '0.6s' }}></div>
-              <div className="w-3 h-3 bg-gradient-to-r from-purple-600 to-purple-500 dark:from-purple-400 dark:to-purple-300 rounded-full animate-bounce shadow-lg shadow-purple-500/50" style={{ animationDelay: '150ms', animationDuration: '0.6s' }}></div>
-              <div className="w-3 h-3 bg-gradient-to-r from-pink-600 to-pink-500 dark:from-pink-400 dark:to-pink-300 rounded-full animate-bounce shadow-lg shadow-pink-500/50" style={{ animationDelay: '300ms', animationDuration: '0.6s' }}></div>
-            </div>
-
-            {/* Progress indicator */}
-            <div className="w-64 h-1.5 mx-auto bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
-              <div className="h-full bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 rounded-full animate-progress"></div>
-            </div>
-          </div>
-        </div>
-      )}
 
       <style>{`
         * {

@@ -6,39 +6,34 @@ export function useMobileSidebar() {
   const isMobile = useIsMobile();
 
   const toggleSidebar = () => {
-    setIsSidebarOpen(!isSidebarOpen);
+    console.log('Toggle called, current:', isSidebarOpen);
+    setIsSidebarOpen(prev => {
+      console.log('Setting to:', !prev);
+      return !prev;
+    });
   };
 
   const closeSidebar = () => {
+    console.log('Close called');
     setIsSidebarOpen(false);
   };
 
+  const openSidebar = () => {
+    console.log('Open called');
+    setIsSidebarOpen(true);
+  };
+
+  // Auto close sidebar when switching to desktop
   useEffect(() => {
-    if (!isMobile) {
+    if (!isMobile && isSidebarOpen) {
       setIsSidebarOpen(false);
     }
-  }, [isMobile]);
-
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const sidebar = document.getElementById('sidebar');
-      const menuButton = document.querySelector('[data-testid="button-mobile-menu"]');
-      
-      if (isMobile && isSidebarOpen && sidebar && menuButton) {
-        if (!sidebar.contains(event.target as Node) && 
-            !menuButton.contains(event.target as Node)) {
-          closeSidebar();
-        }
-      }
-    };
-
-    document.addEventListener('click', handleClickOutside);
-    return () => document.removeEventListener('click', handleClickOutside);
   }, [isMobile, isSidebarOpen]);
 
   return {
     isSidebarOpen,
     toggleSidebar,
-    closeSidebar
+    closeSidebar,
+    openSidebar
   };
 }

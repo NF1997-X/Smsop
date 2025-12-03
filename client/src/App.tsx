@@ -4,7 +4,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { useAuth } from "@/hooks/useAuth";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import Home from "@/pages/home";
 import AuthPage from "@/pages/auth";
 import NotFound from "@/pages/not-found";
@@ -13,24 +13,51 @@ import { ErrorBoundary } from "@/components/error-boundary";
 
 function Router() {
   const { isAuthenticated, isLoading } = useAuth();
+  const [isAuthenticating, setIsAuthenticating] = useState(false);
+  const [hasCheckedAuth, setHasCheckedAuth] = useState(false);
   const [showIntro, setShowIntro] = useState(true);
   const [introComplete, setIntroComplete] = useState(false);
-  const [hasSeenIntro, setHasSeenIntro] = useState(false);
+  const [fadeIn, setFadeIn] = useState(false);
 
   useEffect(() => {
     // Initialize dark theme immediately
     document.documentElement.classList.add('dark');
     
-    // Check if user has already seen intro (stored in sessionStorage)
+    // Reset body opacity for fade in
+    document.body.style.opacity = '1';
+    document.body.style.transition = '';
+    
+    // Check if user just logged in (prevent flash)
+    const authenticating = sessionStorage.getItem('isAuthenticating');
+    if (authenticating === 'true') {
+      setIsAuthenticating(true);
+      sessionStorage.removeItem('isAuthenticating');
+    }
+    
+    // Check if user has seen intro before
     const seenIntro = sessionStorage.getItem('introSeen');
     if (seenIntro === 'true') {
       setShowIntro(false);
       setIntroComplete(true);
-      setHasSeenIntro(true);
     }
   }, []);
 
-  if (showIntro && !introComplete && !hasSeenIntro) {
+  useEffect(() => {
+    // Track when auth check is complete
+    if (!isLoading) {
+      setHasCheckedAuth(true);
+    }
+  }, [isLoading]);
+  
+  useEffect(() => {
+    // Trigger fade in after intro complete
+    if (introComplete) {
+      setTimeout(() => setFadeIn(true), 50);
+    }
+  }, [introComplete]);
+
+  // Show intro animation on first visit
+  if (showIntro && !introComplete) {
     return (
       <LoadingIntro 
         onComplete={() => {
@@ -42,17 +69,27 @@ function Router() {
     );
   }
 
-  // Show auth page while loading or if not authenticated
-  if (isLoading || !isAuthenticated) {
+  // If user just logged in, show nothing while loading
+  if (isAuthenticating && isLoading) {
+    return null;
+  }
+
+  // On refresh/initial load, show nothing while checking auth (prevent flash)
+  if (isLoading && !hasCheckedAuth) {
+    return null;
+  }
+
+  // Show auth page if not authenticated
+  if (!isAuthenticated) {
     return (
-      <div className={`transition-all duration-700 ease-out ${introComplete ? 'opacity-100 transform-none' : 'opacity-0 scale-95'}`}>
+      <div className={`transition-opacity duration-700 ease-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
         <AuthPage />
       </div>
     );
   }
 
   return (
-    <div className={`transition-all duration-700 ease-out ${introComplete ? 'opacity-100 transform-none' : 'opacity-0 scale-95'}`}>
+    <div className={`transition-opacity duration-700 ease-out ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
       <Switch>
         <Route path="/" component={Home} />
         <Route component={NotFound} />

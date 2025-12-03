@@ -32,6 +32,18 @@ export default function Home() {
     }
   }, [isAuthenticated, isLoading]);
 
+  // Close sidebar on Escape key
+  useEffect(() => {
+    const handleEscape = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isSidebarOpen) {
+        closeSidebar();
+      }
+    };
+    
+    window.addEventListener('keydown', handleEscape);
+    return () => window.removeEventListener('keydown', handleEscape);
+  }, [isSidebarOpen, closeSidebar]);
+
   // Listen for tab switch events
   useEffect(() => {
     const handleSwitchTab = (event: CustomEvent) => {
@@ -99,6 +111,18 @@ export default function Home() {
 
   return (
     <div className="flex h-screen overflow-hidden bg-background">
+      {/* Mobile Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-40 md:hidden"
+          onClick={(e) => {
+            e.preventDefault();
+            console.log('Overlay clicked!');
+            closeSidebar();
+          }}
+        />
+      )}
+      
       <Sidebar 
         activeTab={activeTab}
         onTabChange={setActiveTab}
@@ -110,15 +134,20 @@ export default function Home() {
         {/* Header */}
         <header className="bg-card border-b border-border px-6 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={toggleSidebar}
-              data-testid="button-sidebar-toggle"
-              className="hover:bg-gray-200 dark:hover:bg-gray-700"
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                console.log('Hamburger clicked! Current state:', isSidebarOpen);
+                toggleSidebar();
+              }}
+              className="w-10 h-10 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 flex items-center justify-center transition-colors"
             >
-              <Menu className="h-5 w-5" />
-            </Button>
+              <div className="w-5 flex flex-col gap-1 pointer-events-none">
+                <span className={`h-0.5 w-full bg-gray-700 dark:bg-gray-300 rounded-full transition-all duration-300 ${isSidebarOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+                <span className={`h-0.5 w-full bg-gray-700 dark:bg-gray-300 rounded-full transition-all duration-300 ${isSidebarOpen ? 'opacity-0' : ''}`}></span>
+                <span className={`h-0.5 w-full bg-gray-700 dark:bg-gray-300 rounded-full transition-all duration-300 ${isSidebarOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+              </div>
+            </button>
             <h1 className="text-sm font-semibold text-foreground" data-testid="text-page-title">
               {getPageTitle(activeTab)}
             </h1>
@@ -143,10 +172,27 @@ export default function Home() {
               size="sm" 
               onClick={async () => {
                 try {
+                  // Clear any auth flags before logout
+                  sessionStorage.removeItem('isAuthenticating');
+                  sessionStorage.removeItem('introSeen');
+                  
+                  // Smooth fade out transition
+                  const pageElement = document.querySelector('body');
+                  if (pageElement) {
+                    pageElement.style.transition = 'opacity 500ms ease-out';
+                    pageElement.style.opacity = '0';
+                  }
+                  
+                  // Logout and redirect after fade animation
                   await fetch("/api/logout", { method: "POST" });
-                  window.location.href = "/";
+                  
+                  setTimeout(() => {
+                    window.location.href = "/";
+                  }, 500);
                 } catch (error) {
                   console.error("Logout error:", error);
+                  sessionStorage.removeItem('isAuthenticating');
+                  sessionStorage.removeItem('introSeen');
                   window.location.href = "/";
                 }
               }}
