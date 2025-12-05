@@ -17,7 +17,6 @@ import { useAccountUsage } from "@/hooks/useAccountUsage";
 
 export default function SettingsForm() {
   const [showApiKey, setShowApiKey] = useState(false);
-  const [showToken, setShowToken] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const { 
@@ -36,7 +35,6 @@ export default function SettingsForm() {
     resolver: zodResolver(updateSettingsSchema),
     defaultValues: {
       apiKey: "",
-      token: "",
       apiEndpoint: "https://textbelt.com/text",
       defaultCountryCode: "+1",
       autoSaveDrafts: true,
@@ -49,7 +47,6 @@ export default function SettingsForm() {
     if (settings) {
       form.reset({
         apiKey: settings.apiKey || "",
-        token: settings.token || "",
         apiEndpoint: settings.apiEndpoint || "https://textbelt.com/text",
         defaultCountryCode: settings.defaultCountryCode || "+1",
         autoSaveDrafts: settings.autoSaveDrafts ?? true,
@@ -194,41 +191,6 @@ export default function SettingsForm() {
                       >
                         textbelt.com
                       </a>
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="token"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Authentication Token</FormLabel>
-                    <div className="relative">
-                      <FormControl>
-                        <Input
-                          {...field}
-                          value={field.value ?? ""}
-                          type={showToken ? "text" : "password"}
-                          placeholder="Enter your authentication token"
-                          data-testid="input-token"
-                        />
-                      </FormControl>
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        className="absolute right-2 top-0 h-full"
-                        onClick={() => setShowToken(!showToken)}
-                        data-testid="button-toggle-token"
-                      >
-                        {showToken ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </Button>
-                    </div>
-                    <FormDescription>
-                      Optional authentication token for additional security
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
