@@ -10,8 +10,10 @@ interface BalanceResponse {
 export function useAccountBalance() {
   const { data, isLoading, error, refetch } = useQuery<BalanceResponse>({
     queryKey: ["/api/account/balance"],
-    refetchInterval: 30000, // Refetch every 30 seconds
-    retry: 1, // Only retry once on failure
+    refetchInterval: 5 * 60 * 1000, // Refetch every 5 minutes (reduce rate limit hits)
+    staleTime: 3 * 60 * 1000, // Consider data fresh for 3 minutes
+    retry: false, // Don't retry on failure (avoid rate limiting)
+    refetchOnWindowFocus: false, // Don't refetch when window gains focus
   });
 
   return {
