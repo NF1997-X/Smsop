@@ -6,6 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Mail, Lock, Send, MessageSquare, Smartphone, Zap, Moon, Sun, User, Eye, EyeOff, ArrowLeft, KeyRound, CheckCircle2, Sparkles, Shield, ArrowRight } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useQueryClient } from "@tanstack/react-query";
 
 type AuthMode = "signin" | "signup" | "forgot" | "reset-sent";
 
@@ -18,9 +19,11 @@ export default function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRedirecting, setIsRedirecting] = useState(false);
   const [theme, setTheme] = useState<"light" | "dark">("dark");
   const { toast} = useToast();
   const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
 
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -35,14 +38,6 @@ export default function AuthPage() {
   const handleSignIn = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    
-    // Prevent any flicker by hiding form immediately
-    const formElement = e.currentTarget as HTMLFormElement;
-    if (formElement) {
-      formElement.style.opacity = '0';
-      formElement.style.pointerEvents = 'none';
-    }
-    
     try {
       const response = await fetch('/api/auth/signin', {
         method: 'POST',
@@ -53,27 +48,17 @@ export default function AuthPage() {
       const data = await response.json();
       
       if (response.ok) {
-        // Set flag to indicate user is authenticated (prevent flash)
-        sessionStorage.setItem('isAuthenticating', 'true');
-        
-        // Smooth fade out transition
-        const pageElement = document.querySelector('body');
-        if (pageElement) {
-          pageElement.style.transition = 'opacity 500ms ease-out';
-          pageElement.style.opacity = '0';
-        }
-        
-        // Redirect after fade animation
+        toast({ title: "Welcome back!", description: "Successfully signed in." });
+        // Show smooth loading transition
+        setIsRedirecting(true);
+        // Invalidate auth query to refresh authentication status
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
+        // Quick smooth transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 500);
+        }, 800);
       } else {
         console.error("Sign in failed:", data);
-        // Restore form if failed
-        if (formElement) {
-          formElement.style.opacity = '1';
-          formElement.style.pointerEvents = 'auto';
-        }
         toast({ 
           title: "Sign in failed", 
           description: data.message || "Invalid email or password.", 
@@ -82,11 +67,6 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("Sign in error:", error);
-      // Restore form if failed
-      if (formElement) {
-        formElement.style.opacity = '1';
-        formElement.style.pointerEvents = 'auto';
-      }
       toast({ title: "Error", description: "Connection failed. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
@@ -104,14 +84,6 @@ export default function AuthPage() {
       return;
     }
     setIsLoading(true);
-    
-    // Prevent any flicker by hiding form immediately
-    const formElement = e.currentTarget as HTMLFormElement;
-    if (formElement) {
-      formElement.style.opacity = '0';
-      formElement.style.pointerEvents = 'none';
-    }
-    
     try {
       console.log("Attempting signup with:", { email, fullName });
       
@@ -129,27 +101,20 @@ export default function AuthPage() {
       console.log("Signup response:", data);
       
       if (response.ok) {
-        // Set flag to indicate user is authenticated (prevent flash)
-        sessionStorage.setItem('isAuthenticating', 'true');
-        
-        // Smooth fade out transition
-        const pageElement = document.querySelector('body');
-        if (pageElement) {
-          pageElement.style.transition = 'opacity 500ms ease-out';
-          pageElement.style.opacity = '0';
-        }
-        
-        // Redirect after fade animation
+        toast({ 
+          title: "Account created!", 
+          description: "Welcome! Redirecting to dashboard..." 
+        });
+        // Show smooth loading transition
+        setIsRedirecting(true);
+        // Invalidate auth query to refresh authentication status
+        await queryClient.invalidateQueries({ queryKey: ["/api/auth/status"] });
+        // Quick smooth transition before redirect
         setTimeout(() => {
           window.location.href = "/";
-        }, 500);
+        }, 800);
       } else {
         console.error("Signup failed:", data);
-        // Restore form if failed
-        if (formElement) {
-          formElement.style.opacity = '1';
-          formElement.style.pointerEvents = 'auto';
-        }
         toast({ 
           title: "Sign up failed", 
           description: data.message || "Please try again.", 
@@ -158,11 +123,6 @@ export default function AuthPage() {
       }
     } catch (error) {
       console.error("Signup error:", error);
-      // Restore form if failed
-      if (formElement) {
-        formElement.style.opacity = '1';
-        formElement.style.pointerEvents = 'auto';
-      }
       toast({ title: "Error", description: "Connection failed. Please try again.", variant: "destructive" });
     } finally {
       setIsLoading(false);
@@ -643,25 +603,16 @@ export default function AuthPage() {
         }
         body, html {
           overflow-x: hidden;
-          overflow-y: auto;
-          position: fixed;
-          width: 100%;
-          height: 100%;
         }
         form {
           isolation: isolate;
-          contain: layout style paint;
-          transition: opacity 0.2s ease;
-        }
-        input, button {
-          contain: layout;
         }
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus {
-          -webkit-text-fill-color: inherit !important;
-          -webkit-box-shadow: 0 0 0px 1000px transparent inset !important;
-          transition: background-color 5000s ease-in-out 0s !important;
+          -webkit-text-fill-color: inherit;
+          -webkit-box-shadow: 0 0 0px 1000px transparent inset;
+          transition: background-color 5000s ease-in-out 0s;
           background-color: transparent !important;
         }
         input:-webkit-autofill {
@@ -669,12 +620,6 @@ export default function AuthPage() {
         }
         input:not(:-webkit-autofill) {
           animation-name: onAutoFillCancel;
-        }
-        /* Prevent chrome password popup from causing reflow */
-        input[type="password"],
-        input[type="email"] {
-          will-change: auto;
-          transform: translateZ(0);
         }
         @keyframes onAutoFillStart {
           from { /**/}
