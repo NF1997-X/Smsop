@@ -359,6 +359,60 @@ app.post('/api/messages', isAuthenticated, async (req, res) => {
   }
 });
 
+// POST /api/messages/send - Send SMS (frontend uses this endpoint)
+app.post('/api/messages/send', isAuthenticated, async (req, res) => {
+  try {
+    const { recipientPhone, recipientName, content } = req.body;
+    
+    if (!recipientPhone || !content) {
+      return res.status(400).json({ message: "Phone number and message content are required" });
+    }
+    
+    const [userSettings] = await db.select().from(settings).limit(1);
+    
+    if (!userSettings?.apiKey) {
+      return res.status(400).json({ message: "API key not configured. Please configure your Textbelt API key in settings." });
+    }
+    
+    // Send SMS via Textbelt
+    const response = await fetch(userSettings.apiEndpoint || 'https://textbelt.com/text', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phone: recipientPhone,
+        message: content,
+        key: userSettings.apiKey
+      })
+    });
+    
+    const data = await response.json();
+    
+    if (!data.success) {
+      console.error('[Messages] Textbelt error:', data);
+      return res.status(400).json({ 
+        message: data.error || "Failed to send message",
+        success: false
+      });
+    }
+    
+    console.log('[Messages] SMS sent successfully:', {
+      phone: recipientPhone,
+      textId: data.textId,
+      quotaRemaining: data.quotaRemaining
+    });
+    
+    res.json({
+      success: true,
+      message: "Message sent successfully",
+      textId: data.textId,
+      quotaRemaining: data.quotaRemaining
+    });
+  } catch (error) {
+    console.error('[Messages] Send error:', error);
+    res.status(500).json({ message: "Failed to send message" });
+  }
+});
+
 // Other API routes would go here
 // For now, just return 404 for unhandled routes
 app.use('/api/*', (req, res) => {
